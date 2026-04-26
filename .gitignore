@@ -1,0 +1,47 @@
+# ========== UNITY ==========
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+UserSettings/
+MemoryCaptures/
+
+# ========== IDE ==========
+.vs/
+.vscode/
+.idea/
+
+# ========== ARCHIVOS UNITY / C# ==========
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.user
+*.userprefs
+*.pidb
+*.booproj
+
+# ========== SISTEMA ==========
+.DS_Store
+Thumbs.db
+
+# ========== LOGS ==========
+*.log
+
+# ========== BLENDER ==========
+*.blend1
+*.blend1.meta
+
+# ========== BUILDS ==========
+*.apk
+*.aab
+*.unitypackage
+
+# ========== ADDRESSABLES / VS ==========
+[Aa]ssets/AddressableAssetsData/*/*.bin*
+[Aa]ssets/Unity.VisualScripting.Generated/
+
+# ========== TEST ==========
+[Aa]ssets/InitTestScene*.unity*
