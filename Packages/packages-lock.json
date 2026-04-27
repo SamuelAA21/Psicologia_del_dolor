@@ -198,6 +198,15 @@
       "dependencies": {},
       "hash": "f525a4fae7a32d30fa754fbefb2072c155914c14"
     },
+    "dev.yarnspinner.unity.samples": {
+      "version": "file:dev.yarnspinner.unity.samples",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "dev.yarnspinner.unity": "3.2.0",
+        "com.unity.shadergraph": "14.0.0"
+      }
+    },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
       "depth": 0,

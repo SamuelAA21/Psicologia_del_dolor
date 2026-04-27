@@ -1,8 +1,0 @@
-title: Inicio
----
-NPC: Hola, ¿quieres jugar?
--> Sí
-    NPC: Genial!
--> No
-    NPC: Bueno :(
-===

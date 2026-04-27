@@ -5,7 +5,7 @@ using UnityEngine.Events;
 
 /// <summary>
 /// Tipos y clases compartidas por CharacterRouteController y PetFollowController.
-/// Mantener este archivo en la misma carpeta que ambos scripts.
+/// Mantener este archivo en Assets/Scripts/Shared/
 /// </summary>
 public enum RouteActionType
 {
@@ -13,14 +13,15 @@ public enum RouteActionType
     SetAnimatorTrigger,
     SetAnimatorBool,
     MoveTransformToPoint,
-    SetDecisionFlag,
+    SetYarnVariable,
     InvokeUnityEvent
 }
 
 [Serializable]
 public class RouteCondition
 {
-    public string key;
+    // Variable booleana de Yarn a evaluar (ej: "$decision_tomada")
+    public string yarnVariable;
     public bool expectedValue = true;
 }
 
@@ -35,8 +36,9 @@ public class RouteAction
     public Transform targetTransform;
     public Transform destinationPoint;
     public float moveDuration = 1.2f;
-    public string flagKey;
-    public bool flagValue = true;
+    // Para SetYarnVariable
+    public string yarnVariableName;
+    public bool yarnBoolValue = true;
     public UnityEvent customEvent;
 }
 

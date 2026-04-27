@@ -1,0 +1,148 @@
+﻿title: Intro
+---
+Avatar: No has entrado a una clase. Has cruzado un umbral.
+
+Avatar: Tres puertas, tres maneras de relacionarte con el dolor.
+
+-> Entrar a la Puerta 1 (Retirada)
+    <<jump Puerta1>>
+
+-> Entrar a la Puerta 2 (Entender sin cambiar)
+    <<jump Puerta2>>
+
+-> Entrar a la Puerta 3 (Compromiso)
+    <<jump Puerta3>>
+===
+
+title: Puerta1
+---
+Avatar: Has elegido retirarte. No es cobardía; es agotamiento.
+
+Avatar: A veces el dolor hace que todo parezca demasiado.
+
+-> Estoy agotado, pero quiero mirar antes de irme
+    <<jump Puerta1_A>>
+
+-> Prefiero salir
+    <<jump Puerta1_B>>
+===
+
+title: Puerta1_A
+---
+Avatar: Eso basta para empezar. Mirar ya es un acto de cambio.
+
+Avatar: No necesitas hacerlo perfecto, solo estar aquí.
+
+<<jump Final>>
+===
+
+title: Puerta1_B
+---
+Avatar: Puedes salir. Pero recuerda: evitar también enseña al dolor a quedarse.
+
+Avatar: Cuando estés listo, puedes volver.
+
+<<jump Final>>
+===
+
+title: Puerta2
+---
+Avatar: Aquí muchos entienden… pero no cambian.
+
+Avatar: Comprender no siempre transforma.
+
+-> Sí, suena lógico
+    <<jump Puerta2_A>>
+
+-> Quiero probarlo en mi vida
+    <<jump Puerta2_B>>
+===
+
+title: Puerta2_A
+---
+Avatar: Has comprendido, pero tu cuerpo aún no lo vive.
+
+Avatar: El conocimiento sin acción se queda en eco.
+
+<<jump Final>>
+===
+
+title: Puerta2_B
+---
+Avatar: Ahora sí. Cuando aplicas, el cambio empieza.
+
+Avatar: El dolor aprende de lo que haces, no solo de lo que piensas.
+
+<<jump Final>>
+===
+
+title: Puerta3
+---
+Avatar: Ahora entras como protagonista.
+
+Avatar: No vienes a evitar el dolor, vienes a aprender de él.
+
+-> Acepto el reto
+    <<jump Puerta3_A>>
+
+-> Aún tengo miedo
+    <<jump Puerta3_B>>
+===
+
+title: Puerta3_A
+---
+Avatar: Has activado el cambio.
+
+Avatar: No necesitas sentirte listo, solo avanzar.
+
+<<jump Estacion4>>
+===
+
+title: Puerta3_B
+---
+Avatar: El miedo puede acompañarte, no necesita detenerte.
+
+Avatar: Avanzar con miedo sigue siendo avanzar.
+
+<<jump Estacion4>>
+===
+
+title: Estacion4
+---
+Avatar: Nombra tus preguntas antes de avanzar.
+
+Avatar: El miedo se reduce cuando entiendes mejor.
+
+-> ¿Qué me ocurre?
+    <<jump Pregunta_A>>
+
+-> ¿Cómo puede ayudarme esto?
+    <<jump Pregunta_B>>
+===
+
+title: Pregunta_A
+---
+Avatar: Lo que sientes es real, pero no siempre significa daño.
+
+Avatar: Tu sistema de protección puede estar más sensible.
+
+<<jump Final>>
+===
+
+title: Pregunta_B
+---
+Avatar: Comprender el dolor te devuelve control.
+
+Avatar: No elimina todo, pero cambia tu relación con él.
+
+<<jump Final>>
+===
+
+title: Final
+---
+Avatar: Tu aprendizaje acaba de comenzar.
+
+Avatar: Has dado el primer paso para entender tu dolor.
+
+Avatar: Continuemos.
+===

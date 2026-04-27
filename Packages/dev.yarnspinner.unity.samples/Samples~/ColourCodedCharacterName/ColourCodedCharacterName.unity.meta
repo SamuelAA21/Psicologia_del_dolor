@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e81612c4bcccf412fbb24732c2a21cab
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 319418
+  packageName: Yarn Spinner for Unity Samples
+  packageVersion: 3.2.0
+  assetPath: Packages/dev.yarnspinner.unity.samples/Samples~/ColourCodedCharacterName/ColourCodedCharacterName.unity
+  uploadId: 889314

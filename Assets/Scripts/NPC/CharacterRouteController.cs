@@ -2,50 +2,44 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
+using Yarn.Unity;
 
 // Las clases RouteActionType, RouteCondition, RouteAction y RouteStep
 // estan definidas en RouteSharedTypes.cs
 
 /// <summary>
 /// Orquestador de rutas/acciones de personajes.
-/// Se dispara por flags del sistema de dialogo y permite ejecutar
+/// Se dispara por variables de Yarn Spinner y permite ejecutar
 /// animaciones, movimiento, eventos e interacciones sin duplicar codigo.
 /// </summary>
 public class CharacterRouteController : MonoBehaviour
 {
-    [Header("Trigger por decision")]
+    [Header("Yarn Spinner")]
+    [Tooltip("Variable booleana de Yarn que dispara esta ruta (ej: $tema_desbloqueado)")]
+    [SerializeField] private string triggerYarnVariable;
+    [SerializeField] private bool triggerExpectedValue = true;
     [SerializeField] private bool autoRunOnStart;
-    [SerializeField] private string triggerFlagKey;
-    [SerializeField] private bool triggerFlagValue = true;
 
     [Header("Recorrido de acciones")]
     [SerializeField] private List<RouteStep> steps = new List<RouteStep>();
 
-    [Header("Fallback de configuracion rapida")]
+    [Header("Fallback configuracion rapida")]
     [SerializeField] private bool buildDefaultRouteIfEmpty = true;
     [SerializeField] private Transform defaultMoveTarget;
     [SerializeField] private Animator defaultAnimator;
     [SerializeField] private string defaultAnimatorTrigger = "Saludar";
     [SerializeField] private float defaultMoveDuration = 1.6f;
 
-    private bool isSubscribed;
+    private InMemoryVariableStorage yarnStorage;
     private bool isRunning;
     private readonly HashSet<string> executedStepIds = new HashSet<string>(StringComparer.Ordinal);
 
     private void Awake()
     {
         EnsureDefaultSetup();
-    }
-
-    private void OnEnable()
-    {
-        TrySubscribe();
-    }
-
-    private void Update()
-    {
-        if (!isSubscribed) TrySubscribe();
+        yarnStorage = FindObjectOfType<InMemoryVariableStorage>();
+        if (yarnStorage == null)
+            Debug.LogWarning("[CharacterRouteController] No se encontro InMemoryVariableStorage en la escena.", this);
     }
 
     private void Start()
@@ -53,31 +47,25 @@ public class CharacterRouteController : MonoBehaviour
         if (autoRunOnStart) RunRouteIfPossible();
     }
 
-    private void OnDisable()
-    {
-        if (!isSubscribed || PlayerDecisionState.Instance == null) return;
-        PlayerDecisionState.Instance.OnFlagChanged -= HandleFlagChanged;
-        isSubscribed = false;
-    }
-
+    /// <summary>
+    /// Llama este metodo desde un Yarn Command o desde otro script
+    /// cuando quieras disparar la ruta manualmente.
+    /// </summary>
     public void RunRouteIfPossible()
     {
         if (isRunning) return;
         StartCoroutine(RunRouteCoroutine());
     }
 
-    private void TrySubscribe()
+    /// <summary>
+    /// Verifica la variable de Yarn y ejecuta la ruta si coincide.
+    /// Llamar desde DialogueRunner via evento o comando de Yarn.
+    /// </summary>
+    public void CheckAndRun()
     {
-        if (isSubscribed || PlayerDecisionState.Instance == null) return;
-        PlayerDecisionState.Instance.OnFlagChanged += HandleFlagChanged;
-        isSubscribed = true;
-    }
-
-    private void HandleFlagChanged(string key, bool value)
-    {
-        if (string.IsNullOrWhiteSpace(triggerFlagKey)) return;
-        if (!string.Equals(key, triggerFlagKey, StringComparison.Ordinal)) return;
-        if (value == triggerFlagValue) RunRouteIfPossible();
+        if (string.IsNullOrWhiteSpace(triggerYarnVariable)) { RunRouteIfPossible(); return; }
+        bool current = GetYarnBool(triggerYarnVariable);
+        if (current == triggerExpectedValue) RunRouteIfPossible();
     }
 
     private IEnumerator RunRouteCoroutine()
@@ -105,13 +93,10 @@ public class CharacterRouteController : MonoBehaviour
     private bool PassesConditions(List<RouteCondition> conditions)
     {
         if (conditions == null || conditions.Count == 0) return true;
-
-        PlayerDecisionState state = PlayerDecisionState.Instance;
         foreach (RouteCondition condition in conditions)
         {
-            if (condition == null || string.IsNullOrWhiteSpace(condition.key)) continue;
-            bool current = state != null && state.GetFlag(condition.key);
-            if (current != condition.expectedValue) return false;
+            if (condition == null || string.IsNullOrWhiteSpace(condition.yarnVariable)) continue;
+            if (GetYarnBool(condition.yarnVariable) != condition.expectedValue) return false;
         }
         return true;
     }
@@ -145,9 +130,9 @@ public class CharacterRouteController : MonoBehaviour
                         yield return MoveOverTime(action.targetTransform, action.destinationPoint, action.moveDuration);
                     break;
 
-                case RouteActionType.SetDecisionFlag:
-                    if (!string.IsNullOrWhiteSpace(action.flagKey))
-                        PlayerDecisionState.Instance?.SetFlag(action.flagKey, action.flagValue);
+                case RouteActionType.SetYarnVariable:
+                    if (!string.IsNullOrWhiteSpace(action.yarnVariableName))
+                        yarnStorage?.SetValue(action.yarnVariableName, action.yarnBoolValue);
                     break;
 
                 case RouteActionType.InvokeUnityEvent:
@@ -177,15 +162,21 @@ public class CharacterRouteController : MonoBehaviour
         source.rotation = destination.rotation;
     }
 
+    private bool GetYarnBool(string variableName)
+    {
+        if (yarnStorage == null) return false;
+        // Asegura que tenga el prefijo $
+        string key = variableName.StartsWith("$") ? variableName : "$" + variableName;
+        yarnStorage.TryGetValue(key, out bool value);
+        return value;
+    }
+
     private void EnsureDefaultSetup()
     {
         if (!buildDefaultRouteIfEmpty || steps.Count > 0) return;
 
-        if (string.IsNullOrWhiteSpace(triggerFlagKey))
-        {
-            triggerFlagKey = "tema_siguiente_desbloqueado";
-            triggerFlagValue = true;
-        }
+        if (string.IsNullOrWhiteSpace(triggerYarnVariable))
+            triggerYarnVariable = "$tema_siguiente_desbloqueado";
 
         RouteStep step = new RouteStep { id = "default_route_step", runOnlyOnce = true };
 
@@ -196,17 +187,14 @@ public class CharacterRouteController : MonoBehaviour
         }
 
         if (defaultAnimator != null && !string.IsNullOrWhiteSpace(defaultAnimatorTrigger))
-        {
             step.actions.Add(new RouteAction
             {
                 actionType = RouteActionType.SetAnimatorTrigger,
                 targetAnimator = defaultAnimator,
                 parameterName = defaultAnimatorTrigger
             });
-        }
 
         if (defaultMoveTarget != null)
-        {
             step.actions.Add(new RouteAction
             {
                 actionType = RouteActionType.MoveTransformToPoint,
@@ -214,7 +202,6 @@ public class CharacterRouteController : MonoBehaviour
                 destinationPoint = defaultMoveTarget,
                 moveDuration = defaultMoveDuration
             });
-        }
 
         if (step.actions.Count > 0) steps.Add(step);
     }
