@@ -1,0 +1,43 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="BreathingMinigame.uss" />
+    <ui:VisualElement name="root" class="root">
+        <ui:VisualElement name="phase-background" class="phase-background phase-inhale" />
+        <ui:VisualElement name="top-bar" class="top-bar">
+            <ui:VisualElement name="phase-info" class="phase-info">
+                <ui:Label name="phase-label" text="Respiracion cuadrada" class="phase-label" />
+                <ui:Label name="phase-sub" text="Presiona comenzar" class="phase-sub" />
+            </ui:VisualElement>
+            <ui:VisualElement name="coins-box" class="coins-box">
+                <ui:VisualElement name="coin-icon" class="coin-icon">
+                    <ui:Label text="$" class="coin-symbol" />
+                </ui:VisualElement>
+                <ui:Label name="coin-count" text="0" class="coin-count" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="game-area" class="game-area">
+            <ui:IMGUIContainer name="curve-container" class="curve-container" />
+            <ui:VisualElement name="guide-point" class="guide-point guide-inhale">
+                <ui:VisualElement name="guide-inner" class="guide-inner" />
+            </ui:VisualElement>
+            <ui:VisualElement name="follow-zone" class="follow-zone zone-inhale" />
+            <ui:VisualElement name="cursor-dot" class="cursor-dot">
+                <ui:VisualElement name="cursor-inner" class="cursor-inner" />
+            </ui:VisualElement>
+            <ui:VisualElement name="coins-container" class="coins-container" />
+        </ui:VisualElement>
+        <ui:VisualElement name="calm-section" class="calm-section">
+            <ui:VisualElement name="calm-labels" class="calm-labels">
+                <ui:Label text="Calma" class="calm-label-text" />
+                <ui:Label name="calm-pct" text="0%" class="calm-pct" />
+            </ui:VisualElement>
+            <ui:VisualElement name="calm-track" class="calm-track">
+                <ui:VisualElement name="calm-fill" class="calm-fill" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Label name="cycles-label" text="Ciclos: 0 / 4" class="cycles-label" />
+        <ui:Button name="start-button" text="Comenzar" class="start-button" />
+        <ui:VisualElement name="complete-panel" class="complete-panel hidden">
+            <ui:Label name="complete-label" text="" class="complete-label" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
