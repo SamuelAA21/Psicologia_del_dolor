@@ -1,4 +1,4 @@
-﻿title: Intro
+title: Intro
 ---
 Avatar: No has entrado a una clase. Has cruzado un umbral.
 
@@ -12,6 +12,9 @@ Avatar: Tres puertas, tres maneras de relacionarte con el dolor.
 
 -> Entrar a la Puerta 3 (Compromiso)
     <<jump Puerta3>>
+
+-> Depurar minijuego
+    <<iniciar_respiracion>>
 ===
 
 title: Puerta1
@@ -143,6 +146,10 @@ title: Final
 Avatar: Tu aprendizaje acaba de comenzar.
 
 Avatar: Has dado el primer paso para entender tu dolor.
+
+Avatar: Practica la respiración consciente para continuar.
+
+<<iniciar_respiracion>>
 
 Avatar: Continuemos.
 ===
