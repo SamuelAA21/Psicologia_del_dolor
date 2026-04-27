@@ -12,9 +12,6 @@ Avatar: Tres puertas, tres maneras de relacionarte con el dolor.
 
 -> Entrar a la Puerta 3 (Compromiso)
     <<jump Puerta3>>
-
--> Depurar minijuego
-    <<iniciar_respiracion>>
 ===
 
 title: Puerta1
