@@ -1,8 +1,9 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
 /// <summary>
-/// Movimiento en primera persona con WASD + rotacion por mouse + animacion.
+/// Movimiento en primera persona con New Input System + gravedad + animacion.
 /// </summary>
 public class PlayerController : MonoBehaviour
 {
@@ -12,12 +13,14 @@ public class PlayerController : MonoBehaviour
 
     [Header("Camara")]
     [SerializeField] private Transform cameraTransform;
-    [SerializeField] private float mouseSensitivity = 100f;
+    [SerializeField] private float mouseSensitivity = 0.1f;
 
     [Header("Animacion")]
     [SerializeField] private Animator playerAnimator;
 
     private CharacterController controller;
+    private Vector2 moveInput;
+    private Vector2 lookInput;
     private float verticalVelocity;
     private float xRotation;
 
@@ -28,6 +31,17 @@ public class PlayerController : MonoBehaviour
         Cursor.visible = false;
     }
 
+    // Llamado automaticamente por PlayerInput component
+    public void OnMove(InputValue value)
+    {
+        moveInput = value.Get<Vector2>();
+    }
+
+    public void OnLook(InputValue value)
+    {
+        lookInput = value.Get<Vector2>();
+    }
+
     private void Update()
     {
         HandleRotation();
@@ -36,25 +50,21 @@ public class PlayerController : MonoBehaviour
 
     private void HandleRotation()
     {
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+        float mouseX = lookInput.x * mouseSensitivity;
+        float mouseY = lookInput.y * mouseSensitivity;
 
-        // Rotar camara verticalmente
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -80f, 80f);
+
         if (cameraTransform != null)
             cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
 
-        // Rotar personaje horizontalmente
         transform.Rotate(Vector3.up * mouseX);
     }
 
     private void HandleMovement()
     {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
-
-        Vector3 move = (transform.right * horizontal + transform.forward * vertical).normalized;
+        Vector3 move = (transform.right * moveInput.x + transform.forward * moveInput.y).normalized;
 
         if (controller.isGrounded && verticalVelocity < 0f)
             verticalVelocity = -2f;
@@ -66,7 +76,6 @@ public class PlayerController : MonoBehaviour
 
         controller.Move(velocity * Time.deltaTime);
 
-        // Animacion
         bool isMoving = move.magnitude > 0.1f;
         playerAnimator?.SetBool("IsWalking", isMoving);
     }
