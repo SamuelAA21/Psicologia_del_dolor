@@ -64,12 +64,16 @@ public class BreathingController : MonoBehaviour
     };
 
     [SerializeField] private bool playOnStart = true;
+    [SerializeField, Min(1)] private int sessionCycleCount = 4;
 
     private int currentPhaseIndex;
     private float phaseTimer;
     private bool isRunning;
+    private float phaseEntryCenterY;
+    private int completedCycles;
 
     public event Action<BreathingPhaseSettings> PhaseChanged;
+    public event Action SessionCompleted;
 
     public BreathPhase CurrentPhase => CurrentPhaseSettings.phase;
     public BreathingPhaseSettings CurrentPhaseSettings => phaseSequence[currentPhaseIndex];
@@ -77,11 +81,15 @@ public class BreathingController : MonoBehaviour
         ? 1f
         : Mathf.Clamp01(phaseTimer / CurrentPhaseSettings.duration);
     public bool IsRunning => isRunning;
+    public int CompletedCycles => completedCycles;
+    public int SessionCycleCount => sessionCycleCount;
 
     private void Awake()
     {
         EnsureValidConfiguration();
         currentPhaseIndex = 0;
+        phaseEntryCenterY = GetRangeCenter(CurrentPhaseSettings.GetSortedPlayerTargetRange());
+        completedCycles = 0;
     }
 
     private void Start()
@@ -113,8 +121,10 @@ public class BreathingController : MonoBehaviour
     {
         EnsureValidConfiguration();
         isRunning = true;
+        completedCycles = 0;
         currentPhaseIndex = Mathf.Clamp(currentPhaseIndex, 0, phaseSequence.Length - 1);
         phaseTimer = 0f;
+        phaseEntryCenterY = GetPhaseInitialCenter(currentPhaseIndex);
         NotifyPhaseChanged();
     }
 
@@ -127,6 +137,8 @@ public class BreathingController : MonoBehaviour
     {
         currentPhaseIndex = 0;
         phaseTimer = 0f;
+        phaseEntryCenterY = GetPhaseInitialCenter(currentPhaseIndex);
+        completedCycles = 0;
         NotifyPhaseChanged();
     }
 
@@ -150,24 +162,29 @@ public class BreathingController : MonoBehaviour
             return 0f;
         }
 
+        return EvaluatePhaseCenter(currentSettings, CurrentPhaseProgress);
+    }
+
+    private float EvaluatePhaseCenter(BreathingPhaseSettings currentSettings, float progress)
+    {
         float currentCenter = GetRangeCenter(currentSettings.GetSortedPlayerTargetRange());
 
         switch (CurrentPhase)
         {
             case BreathPhase.Inhale:
                 return Mathf.Lerp(
-                    GetPreviousPhaseCenter(),
+                    phaseEntryCenterY,
                     currentCenter,
-                    EaseInhale(CurrentPhaseProgress));
+                    EaseInhale(progress));
 
             case BreathPhase.Hold:
-                return currentCenter;
+                return phaseEntryCenterY;
 
             case BreathPhase.Exhale:
                 return Mathf.Lerp(
-                    GetPreviousPhaseCenter(),
+                    phaseEntryCenterY,
                     currentCenter,
-                    EaseExhale(CurrentPhaseProgress));
+                    EaseExhale(progress));
 
             default:
                 return currentCenter;
@@ -176,8 +193,26 @@ public class BreathingController : MonoBehaviour
 
     private void AdvancePhase()
     {
+        float exitCenterY = EvaluatePhaseCenter(CurrentPhaseSettings, 1f);
+        bool completedFullBreath = currentPhaseIndex == phaseSequence.Length - 1;
+
+        if (completedFullBreath)
+        {
+            completedCycles++;
+        }
+
+        if (completedFullBreath && completedCycles >= sessionCycleCount)
+        {
+            phaseTimer = CurrentPhaseSettings.duration;
+            phaseEntryCenterY = exitCenterY;
+            isRunning = false;
+            SessionCompleted?.Invoke();
+            return;
+        }
+
         phaseTimer = 0f;
         currentPhaseIndex = (currentPhaseIndex + 1) % phaseSequence.Length;
+        phaseEntryCenterY = exitCenterY;
         NotifyPhaseChanged();
     }
 
@@ -237,9 +272,9 @@ public class BreathingController : MonoBehaviour
         };
     }
 
-    private float GetPreviousPhaseCenter()
+    private float GetPhaseInitialCenter(int phaseIndex)
     {
-        int previousIndex = (currentPhaseIndex - 1 + phaseSequence.Length) % phaseSequence.Length;
+        int previousIndex = (phaseIndex - 1 + phaseSequence.Length) % phaseSequence.Length;
         return GetRangeCenter(phaseSequence[previousIndex].GetSortedPlayerTargetRange());
     }
 

@@ -1,25 +1,27 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-public class PlayerJetpack : MonoBehaviour
+public class Player2D : MonoBehaviour
 {
     public float jumpForce = 8f;
     public float maxFallSpeed = -6f;
+    public Key thrustKey = Key.Space;
 
     private Rigidbody2D rb;
 
-    void Start()
+    private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
     }
 
-    void Update()
+    private void Update()
     {
-        if (Input.GetKey(KeyCode.Space))
+        if (Keyboard.current != null && Keyboard.current[thrustKey].isPressed)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
         }
 
-        // limitar caída
+        // Limitar caida.
         if (rb.linearVelocity.y < maxFallSpeed)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, maxFallSpeed);
