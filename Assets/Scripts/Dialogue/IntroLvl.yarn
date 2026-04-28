@@ -146,7 +146,5 @@ Avatar: Has dado el primer paso para entender tu dolor.
 
 Avatar: Practica la respiración consciente para continuar.
 
-<<iniciar_respiracion>>
-
-Avatar: Continuemos.
+<<iniciar_respiracion MinigameBridge>>
 ===

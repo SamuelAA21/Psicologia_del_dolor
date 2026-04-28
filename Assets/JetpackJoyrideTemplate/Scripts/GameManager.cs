@@ -1,10 +1,10 @@
 using UnityEngine;
-
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
     [SerializeField] private bool isGameOver;
+    [SerializeField] private string returnSceneName = "SampleScene";
 
     public bool IsGameOver => isGameOver;
     public bool CanPlay => !isGameOver;
@@ -24,14 +24,12 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
-        if (isGameOver)
-        {
-            return;
-        }
+        if (isGameOver) return;
 
         isGameOver = true;
-        Time.timeScale = 0f;
-        Debug.Log("GAME OVER");
+        Time.timeScale = 1f;
+
+        SceneLoader.LoadSceneSafe(returnSceneName);
     }
 
     public void ResetSession()

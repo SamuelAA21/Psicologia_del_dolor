@@ -63,7 +63,7 @@ public class BreathingController : MonoBehaviour
         }
     };
 
-    [SerializeField] private bool playOnStart = true;
+    [SerializeField] private bool playOnStart = false;
     [SerializeField, Min(1)] private int sessionCycleCount = 4;
 
     private int currentPhaseIndex;
