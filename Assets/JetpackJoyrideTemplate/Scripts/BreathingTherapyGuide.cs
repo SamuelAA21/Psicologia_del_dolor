@@ -18,7 +18,7 @@ public class BreathingTherapyGuide : MonoBehaviour
     {
         if (breathingController == null)
         {
-            breathingController = FindObjectOfType<BreathingController>();
+            breathingController = FindAnyObjectByType<BreathingController>();
         }
     }
 

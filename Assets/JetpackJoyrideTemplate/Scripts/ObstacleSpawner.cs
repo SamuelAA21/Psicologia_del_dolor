@@ -23,7 +23,7 @@ public class ObstacleSpawner : MonoBehaviour
     {
         if (breathingController == null)
         {
-            breathingController = FindObjectOfType<BreathingController>();
+            breathingController = FindAnyObjectByType<BreathingController>();
         }
 
         if (targetCamera == null)

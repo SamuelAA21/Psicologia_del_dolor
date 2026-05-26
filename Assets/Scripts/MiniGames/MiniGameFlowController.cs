@@ -8,7 +8,7 @@ public class MiniGameFlowController : MonoBehaviour
     private void Start()
     {
         if (controller == null)
-            controller = FindFirstObjectByType<BreathingController>();
+            controller = FindAnyObjectByType<BreathingController>();
 
         if (controller != null)
         {

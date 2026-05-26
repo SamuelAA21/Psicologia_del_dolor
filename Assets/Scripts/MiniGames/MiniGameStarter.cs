@@ -7,7 +7,7 @@ public class MiniGameStarter : MonoBehaviour
     private void Start()
     {
         if (controller == null)
-            controller = FindFirstObjectByType<BreathingController>();
+            controller = FindAnyObjectByType<BreathingController>();
 
         controller?.StartCycle();
     }

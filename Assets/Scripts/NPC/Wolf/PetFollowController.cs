@@ -67,7 +67,7 @@ public class PetFollowController : MonoBehaviour
         ConfigureAgent();
         EnsureDefaultSetup();
 
-        yarnStorage = FindObjectOfType<InMemoryVariableStorage>();
+        yarnStorage = FindAnyObjectByType<InMemoryVariableStorage>();
         if (yarnStorage == null)
             Debug.LogWarning("[PetFollowController] No se encontro InMemoryVariableStorage en la escena.", this);
 

@@ -9,6 +9,14 @@ public class Player2D : MonoBehaviour
 
     private Rigidbody2D rb;
 
+    private void Awake()
+    {
+        if (TryGetComponent(out PlayerJetpack jetpack) && jetpack.enabled)
+        {
+            enabled = false;
+        }
+    }
+
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -16,6 +24,11 @@ public class Player2D : MonoBehaviour
 
     private void Update()
     {
+        if (rb == null)
+        {
+            return;
+        }
+
         if (Keyboard.current != null && Keyboard.current[thrustKey].isPressed)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);

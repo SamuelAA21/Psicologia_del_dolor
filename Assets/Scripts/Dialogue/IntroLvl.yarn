@@ -1,150 +1,151 @@
 title: Intro
 ---
-Avatar: No has entrado a una clase. Has cruzado un umbral.
+<<set $disposicion = 0>>
+<<set $resistencia = 0>>
+<<set $comprension_superficial = 0>>
+<<set $aplicacion = 0>>
+<<set $compromiso = 0>>
+<<set $miedo_reconocido = 0>>
+<<set $pregunta_que_ocurre = false>>
+<<set $pregunta_ayuda = false>>
+<<set $pregunta_siguiente = false>>
+<<set $brujula_compromiso = false>>
+<<chapter1_stage "Intro">>
 
-Avatar: Tres puertas, tres maneras de relacionarte con el dolor.
+Avatar Clínico: Has entrado a una clase. Has cruzado el umbral de un territorio que influye en cuerpo, atención y esperanza.
 
--> Entrar a la Puerta 1 (Retirada)
+Avatar Clínico: Lo que elijas aquí definirá cómo se abrirá el resto del mapa.
+
+-> Entrar a la Puerta 1: Retirada
     <<jump Puerta1>>
 
--> Entrar a la Puerta 2 (Entender sin cambiar)
+-> Entrar a la Puerta 2: Entender sin cambiar
     <<jump Puerta2>>
 
--> Entrar a la Puerta 3 (Compromiso)
+-> Entrar a la Puerta 3: Compromiso
     <<jump Puerta3>>
 ===
 
 title: Puerta1
 ---
-Avatar: Has elegido retirarte. No es cobardía; es agotamiento.
+<<chapter1_stage "Puerta1">>
 
-Avatar: A veces el dolor hace que todo parezca demasiado.
+Interlocutor: Has elegido retirarte. No es cobardía; es agotamiento.
 
--> Estoy agotado, pero quiero mirar antes de irme
-    <<jump Puerta1_A>>
+Interlocutor: Pero si te marchas ahora, volverás a recorrer los mismos pasillos con nombres distintos.
 
--> Prefiero salir
-    <<jump Puerta1_B>>
-===
+Avatar Clínico: No te prometo magia. Te prometo un mapa más honesto que el circuito de búsqueda infinita.
 
-title: Puerta1_A
----
-Avatar: Eso basta para empezar. Mirar ya es un acto de cambio.
+-> Estoy agotado, pero quiero mirar antes de irme.
+    Jugador: Estoy agotado, pero quiero mirar antes de irme.
+    Avatar Clínico: Eso basta para abrir la siguiente puerta. No necesito certeza total; necesito disposición.
+    <<set $disposicion += 1>>
+    <<jump Puerta2>>
 
-Avatar: No necesitas hacerlo perfecto, solo estar aquí.
-
-<<jump Final>>
-===
-
-title: Puerta1_B
----
-Avatar: Puedes salir. Pero recuerda: evitar también enseña al dolor a quedarse.
-
-Avatar: Cuando estés listo, puedes volver.
-
-<<jump Final>>
+-> No creo que esto cambie nada; prefiero salir.
+    Jugador: No creo que esto cambie nada; prefiero salir.
+    Avatar Clínico: Puedes salir. Pero si vuelves, el corredor seguirá aquí.
+    Avatar Clínico: Ningún mapa se revela a quien no entra.
+    <<set $resistencia += 1>>
+    <<jump Puerta2>>
 ===
 
 title: Puerta2
 ---
-Avatar: Aquí muchos entienden… pero no cambian.
+<<chapter1_stage "Puerta2">>
 
-Avatar: Comprender no siempre transforma.
+Interlocutor: Aquí muchos asienten, pero no se mueven.
 
--> Sí, suena lógico
-    <<jump Puerta2_A>>
+Interlocutor: Entender sin aplicar deja al sistema exactamente donde estaba.
 
--> Quiero probarlo en mi vida
-    <<jump Puerta2_B>>
-===
+Avatar Clínico: Comprender una frase no basta si no cambia conducta, movimiento o interpretación.
 
-title: Puerta2_A
----
-Avatar: Has comprendido, pero tu cuerpo aún no lo vive.
+-> Sí, suena lógico.
+    Jugador: Sí, suena lógico.
+    Avatar Clínico: Has comprendido la frase, pero no has cruzado el puente.
+    Avatar Clínico: Sin acción, el entorno no cambia.
+    <<set $comprension_superficial += 1>>
+    <<jump Puerta3>>
 
-Avatar: El conocimiento sin acción se queda en eco.
-
-<<jump Final>>
-===
-
-title: Puerta2_B
----
-Avatar: Ahora sí. Cuando aplicas, el cambio empieza.
-
-Avatar: El dolor aprende de lo que haces, no solo de lo que piensas.
-
-<<jump Final>>
+-> Quiero probarlo en mi vida real.
+    Jugador: Quiero probarlo en mi vida real.
+    Avatar Clínico: Ahora sí. Cuando decides aplicar, el conocimiento deja de ser eco y se convierte en herramienta.
+    <<set $aplicacion += 1>>
+    <<jump Puerta3>>
 ===
 
 title: Puerta3
 ---
-Avatar: Ahora entras como protagonista.
+<<chapter1_stage "Puerta3">>
 
-Avatar: No vienes a evitar el dolor, vienes a aprender de él.
+Interlocutor: Ahora sí entras como protagonista.
 
--> Acepto el reto
-    <<jump Puerta3_A>>
+Interlocutor: No vienes a pelear con tu cuerpo, sino a reinterpretar sus señales y recuperar terreno.
 
--> Aún tengo miedo
-    <<jump Puerta3_B>>
-===
+Avatar Clínico: Tu tarea no es sentirte invencible; es recuperar agencia cuando la alarma quiera decidir por ti.
 
-title: Puerta3_A
----
-Avatar: Has activado el cambio.
+-> Acepto el reto y quiero seguir.
+    Jugador: Acepto el reto y quiero seguir.
+    Avatar Clínico: Has activado la ruta del compromiso.
+    Avatar Clínico: A partir de aquí, cada capítulo te entregará una llave.
+    <<set $compromiso += 1>>
+    <<jump Estacion4>>
 
-Avatar: No necesitas sentirte listo, solo avanzar.
-
-<<jump Estacion4>>
-===
-
-title: Puerta3_B
----
-Avatar: El miedo puede acompañarte, no necesita detenerte.
-
-Avatar: Avanzar con miedo sigue siendo avanzar.
-
-<<jump Estacion4>>
+-> Aún tengo miedo, pero no quiero retroceder.
+    Jugador: Aún tengo miedo, pero no quiero retroceder.
+    Avatar Clínico: El miedo puede viajar contigo sin conducir la expedición.
+    <<set $compromiso += 1>>
+    <<set $miedo_reconocido += 1>>
+    <<jump Estacion4>>
 ===
 
 title: Estacion4
 ---
-Avatar: Nombra tus preguntas antes de avanzar.
+<<chapter1_stage "Estacion4">>
 
-Avatar: El miedo se reduce cuando entiendes mejor.
+Interlocutor: Nombra tus preguntas antes de avanzar.
 
--> ¿Qué me ocurre?
-    <<jump Pregunta_A>>
+Interlocutor: El miedo pierde fuerza cuando el misterio se organiza.
 
--> ¿Cómo puede ayudarme esto?
-    <<jump Pregunta_B>>
-===
+Avatar Clínico: Preguntar mejor es explorar mejor. Explorar mejor es temer menos.
 
-title: Pregunta_A
----
-Avatar: Lo que sientes es real, pero no siempre significa daño.
+-> ¿Qué me ocurre? <<if !$pregunta_que_ocurre>>
+    Jugador: ¿Qué me ocurre?
+    Avatar Clínico: Lo que sientes es real.
+    Avatar Clínico: El dolor puede funcionar como una alarma de protección, no solo como un reflejo directo de daño.
+    <<set $pregunta_que_ocurre = true>>
+    <<jump Estacion4>>
 
-Avatar: Tu sistema de protección puede estar más sensible.
+-> ¿Cómo puede ayudar esto? <<if !$pregunta_ayuda>>
+    Jugador: ¿Cómo puede ayudar esto?
+    Avatar Clínico: Comprender el sistema reduce incertidumbre y miedo.
+    Avatar Clínico: El siguiente paso es usar esa comprensión mientras te mueves.
+    <<set $pregunta_ayuda = true>>
+    <<jump Estacion4>>
 
-<<jump Final>>
-===
+-> ¿Qué hago después? <<if !$pregunta_siguiente>>
+    Jugador: ¿Qué hago después?
+    Avatar Clínico: El mapa ya no es solo información.
+    Avatar Clínico: Ahora se convierte en práctica.
+    <<set $pregunta_siguiente = true>>
+    <<jump Final>>
 
-title: Pregunta_B
----
-Avatar: Comprender el dolor te devuelve control.
-
-Avatar: No elimina todo, pero cambia tu relación con él.
-
-<<jump Final>>
+-> Continuar hacia la práctica <<if $pregunta_siguiente>>
+    <<jump Final>>
 ===
 
 title: Final
 ---
-Avatar: Tu aprendizaje acaba de comenzar.
+<<chapter1_stage "Final">>
 
-Avatar: Has dado el primer paso para entender tu dolor.
+Avatar Clínico: Has obtenido la Brújula del Compromiso.
 
-Avatar: Practica la respiración consciente para continuar.
+Avatar Clínico: Esta brújula no elimina el dolor, pero te ayuda a orientarte cuando la alarma intente decidir por ti.
+
+<<set $brujula_compromiso = true>>
+<<chapter1_reward_unlocked>>
+
+Avatar Clínico: Practica la respiración consciente para continuar.
 
 <<iniciar_respiracion MinigameBridge>>
 ===

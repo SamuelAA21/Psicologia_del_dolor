@@ -23,6 +23,9 @@ public class PlayerController : MonoBehaviour
     private Vector2 lookInput;
     private float verticalVelocity;
     private float xRotation;
+    private bool controlEnabled = true;
+
+    public bool ControlEnabled => controlEnabled;
 
     private void Awake()
     {
@@ -34,18 +37,38 @@ public class PlayerController : MonoBehaviour
     // Llamado automaticamente por PlayerInput component
     public void OnMove(InputValue value)
     {
-        moveInput = value.Get<Vector2>();
+        moveInput = controlEnabled ? value.Get<Vector2>() : Vector2.zero;
     }
 
     public void OnLook(InputValue value)
     {
-        lookInput = value.Get<Vector2>();
+        lookInput = controlEnabled ? value.Get<Vector2>() : Vector2.zero;
     }
 
     private void Update()
     {
+        if (!controlEnabled)
+        {
+            playerAnimator?.SetBool("IsWalking", false);
+            return;
+        }
+
         HandleRotation();
         HandleMovement();
+    }
+
+    public void SetControlEnabled(bool enabled)
+    {
+        controlEnabled = enabled;
+
+        if (enabled)
+        {
+            return;
+        }
+
+        moveInput = Vector2.zero;
+        lookInput = Vector2.zero;
+        playerAnimator?.SetBool("IsWalking", false);
     }
 
     private void HandleRotation()

@@ -37,7 +37,7 @@ public class CharacterRouteController : MonoBehaviour
     private void Awake()
     {
         EnsureDefaultSetup();
-        yarnStorage = FindObjectOfType<InMemoryVariableStorage>();
+        yarnStorage = FindAnyObjectByType<InMemoryVariableStorage>();
         if (yarnStorage == null)
             Debug.LogWarning("[CharacterRouteController] No se encontro InMemoryVariableStorage en la escena.", this);
     }

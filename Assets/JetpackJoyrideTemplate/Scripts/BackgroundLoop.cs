@@ -41,7 +41,7 @@ public class BackgroundLoop : MonoBehaviour
     {
         BackgroundLoop[] loops = transform.parent != null
             ? transform.parent.GetComponentsInChildren<BackgroundLoop>()
-            : FindObjectsOfType<BackgroundLoop>();
+            : FindObjectsByType<BackgroundLoop>(FindObjectsInactive.Exclude);
 
         float rightMostX = transform.position.x;
 
