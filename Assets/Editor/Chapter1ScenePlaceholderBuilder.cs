@@ -18,8 +18,8 @@ public static class Chapter1ScenePlaceholderBuilder
             EditorSceneManager.OpenScene(SampleScenePath);
         }
 
-        DialogueRunner dialogueRunner = Object.FindFirstObjectByType<DialogueRunner>(FindObjectsInactive.Include);
-        PlayerController player = Object.FindFirstObjectByType<PlayerController>(FindObjectsInactive.Include);
+        DialogueRunner dialogueRunner = Object.FindAnyObjectByType<DialogueRunner>(FindObjectsInactive.Include);
+        PlayerController player = Object.FindAnyObjectByType<PlayerController>(FindObjectsInactive.Include);
 
         Transform playerTransform = player != null ? player.transform : null;
         Vector3 origin = playerTransform != null ? playerTransform.position : Vector3.zero;
@@ -34,6 +34,7 @@ public static class Chapter1ScenePlaceholderBuilder
 
         GameObject root = GetOrCreateRoot();
         Chapter1EnvironmentController environment = AddOrGet<Chapter1EnvironmentController>(root);
+        Chapter1GuidanceController guidance = AddOrGet<Chapter1GuidanceController>(root);
         DialoguePlayerControlLock controlLock = AddOrGet<DialoguePlayerControlLock>(root);
 
         DoorSetup door1 = CreateDoor(root.transform, "Puerta1_Retirada", "Puerta 1\nRetirada", "Puerta1", origin + forward * 8f - right * 3f, facingPlayer, dialogueRunner, false);
@@ -61,6 +62,7 @@ public static class Chapter1ScenePlaceholderBuilder
         AssignObject(environment, "puerta2Animation", door2.Animation);
         AssignObject(environment, "puerta3Animation", door3.Animation);
         AssignObject(environment, "rewardVisual", reward.GetComponent<RewardVisualController>());
+        AssignObject(environment, "guidanceController", guidance);
         AssignArray(environment, "progressMarkers", marker1, marker2, marker3, marker4, marker5);
         AssignArray(environment, "ambientLights", door1.Light, door2.Light, door3.Light, panel.Light, reward.GetComponentInChildren<Light>(true));
 
@@ -95,6 +97,7 @@ public static class Chapter1ScenePlaceholderBuilder
 
         Light doorLight = GetOrCreateLight(visual.transform, "GuidanceLight", new Vector3(0f, 1.7f, -0.8f), new Color(0.35f, 0.75f, 1f), 3.5f, 4f);
         doorLight.enabled = !locked;
+        AddOrGet<Chapter1AmbientMotion>(doorLight.gameObject).Configure(false, 0f, false, Vector3.zero, false);
 
         GameObject trigger = GetOrCreateChild(visual.transform, "InteractionTrigger");
         trigger.transform.localPosition = new Vector3(0f, 0f, -0.8f);
@@ -134,6 +137,7 @@ public static class Chapter1ScenePlaceholderBuilder
 
         Light panelLight = GetOrCreateLight(visual.transform, "GuidanceLight", new Vector3(0f, 1.3f, -0.85f), new Color(0.45f, 1f, 0.75f), 4.5f, 4f);
         panelLight.enabled = false;
+        AddOrGet<Chapter1AmbientMotion>(panelLight.gameObject).Configure(false, 0f, false, Vector3.zero, false);
 
         GameObject trigger = GetOrCreateChild(visual.transform, "InteractionTrigger");
         trigger.transform.localPosition = new Vector3(0f, 0f, -0.9f);
@@ -164,6 +168,7 @@ public static class Chapter1ScenePlaceholderBuilder
 
         RewardVisualController rewardVisual = AddOrGet<RewardVisualController>(reward);
         AssignObject(rewardVisual, "rewardObject", reward);
+        AddOrGet<Chapter1AmbientMotion>(reward).Configure(true, 0.16f, true, new Vector3(0f, 45f, 0f), true);
 
         Light rewardLight = GetOrCreateLight(reward.transform, "RewardLight", Vector3.up * 0.4f, new Color(1f, 0.85f, 0.35f), 3f, 3f);
         rewardLight.enabled = false;
@@ -178,6 +183,7 @@ public static class Chapter1ScenePlaceholderBuilder
         marker.transform.position = position;
         marker.transform.localScale = Vector3.one * 0.25f;
         SetMaterial(marker, "ProgressMarker", new Color(0.45f, 0.9f, 1f));
+        AddOrGet<Chapter1AmbientMotion>(marker).Configure(true, 0.1f, true, new Vector3(0f, 70f, 0f), true);
         marker.SetActive(false);
         return marker;
     }
@@ -236,6 +242,7 @@ public static class Chapter1ScenePlaceholderBuilder
         textMesh.characterSize = 0.08f;
         textMesh.fontSize = 48;
         textMesh.color = color;
+        AddOrGet<Chapter1Billboard>(target);
 
         MeshRenderer renderer = target.GetComponent<MeshRenderer>();
         if (renderer != null)

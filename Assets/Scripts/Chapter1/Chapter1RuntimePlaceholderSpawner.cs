@@ -42,6 +42,7 @@ public static class Chapter1RuntimePlaceholderSpawner
 
         GameObject root = new GameObject(RootName);
         Chapter1EnvironmentController environment = root.AddComponent<Chapter1EnvironmentController>();
+        Chapter1GuidanceController guidance = root.GetComponent<Chapter1GuidanceController>();
         DialoguePlayerControlLock controlLock = root.AddComponent<DialoguePlayerControlLock>();
         controlLock.Configure(dialogueRunner, player);
 
@@ -71,6 +72,7 @@ public static class Chapter1RuntimePlaceholderSpawner
             door2.Animation,
             door3.Animation,
             reward.GetComponent<RewardVisualController>(),
+            guidance,
             new[] { marker1, marker2, marker3, marker4, marker5 },
             new[] { door1.Light, door2.Light, door3.Light, panel.Light, reward.GetComponentInChildren<Light>(true) });
 
@@ -97,6 +99,7 @@ public static class Chapter1RuntimePlaceholderSpawner
 
         Light doorLight = CreateLight(visual.transform, "GuidanceLight", new Vector3(0f, 1.7f, -0.8f), new Color(0.35f, 0.75f, 1f), 3.5f, 4f);
         doorLight.enabled = !locked;
+        doorLight.gameObject.AddComponent<Chapter1AmbientMotion>().Configure(false, 0f, false, Vector3.zero, false);
 
         GameObject trigger = new GameObject("InteractionTrigger");
         trigger.transform.SetParent(visual.transform);
@@ -138,6 +141,7 @@ public static class Chapter1RuntimePlaceholderSpawner
 
         Light panelLight = CreateLight(visual.transform, "GuidanceLight", new Vector3(0f, 1.3f, -0.85f), new Color(0.45f, 1f, 0.75f), 4.5f, 4f);
         panelLight.enabled = false;
+        panelLight.gameObject.AddComponent<Chapter1AmbientMotion>().Configure(false, 0f, false, Vector3.zero, false);
 
         GameObject trigger = new GameObject("InteractionTrigger");
         trigger.transform.SetParent(visual.transform);
@@ -170,6 +174,7 @@ public static class Chapter1RuntimePlaceholderSpawner
 
         RewardVisualController rewardVisual = reward.AddComponent<RewardVisualController>();
         rewardVisual.Configure(reward);
+        reward.AddComponent<Chapter1AmbientMotion>().Configure(true, 0.16f, true, new Vector3(0f, 45f, 0f), true);
 
         Light rewardLight = CreateLight(reward.transform, "RewardLight", Vector3.up * 0.4f, new Color(1f, 0.85f, 0.35f), 3f, 3f);
         rewardLight.enabled = false;
@@ -186,6 +191,7 @@ public static class Chapter1RuntimePlaceholderSpawner
         marker.transform.position = position;
         marker.transform.localScale = Vector3.one * 0.25f;
         SetMaterial(marker, new Color(0.45f, 0.9f, 1f));
+        marker.AddComponent<Chapter1AmbientMotion>().Configure(true, 0.1f, true, new Vector3(0f, 70f, 0f), true);
         marker.SetActive(false);
         return marker;
     }
@@ -204,6 +210,7 @@ public static class Chapter1RuntimePlaceholderSpawner
         textMesh.characterSize = 0.08f;
         textMesh.fontSize = 48;
         textMesh.color = color;
+        target.AddComponent<Chapter1Billboard>();
         return target;
     }
 

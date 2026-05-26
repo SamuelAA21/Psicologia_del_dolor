@@ -31,6 +31,9 @@ public class Chapter1EnvironmentController : MonoBehaviour
     [Header("Recompensa")]
     [SerializeField] private RewardVisualController rewardVisual;
 
+    [Header("Guia del jugador")]
+    [SerializeField] private Chapter1GuidanceController guidanceController;
+
     [Header("Ambiente opcional")]
     [SerializeField] private GameObject[] progressMarkers;
     [SerializeField] private Light[] ambientLights;
@@ -49,6 +52,15 @@ public class Chapter1EnvironmentController : MonoBehaviour
         }
 
         Instance = this;
+
+        if (guidanceController == null)
+        {
+            guidanceController = GetComponent<Chapter1GuidanceController>();
+            if (guidanceController == null)
+            {
+                guidanceController = gameObject.AddComponent<Chapter1GuidanceController>();
+            }
+        }
     }
 
     private void OnDestroy()
@@ -131,6 +143,8 @@ public class Chapter1EnvironmentController : MonoBehaviour
         {
             rewardVisual.PlayUnlock();
         }
+
+        SetObjective("Recompensa obtenida: prepárate para respirar.", brujulaDelCompromiso);
     }
 
     public void UnlockStage(string stageName)
@@ -147,6 +161,7 @@ public class Chapter1EnvironmentController : MonoBehaviour
             SetDoorLocked(puerta2Animation, true);
             SetDoorLocked(puerta3Animation, true);
             HighlightStage("Puerta1");
+            SetObjective("Acércate a la Puerta 1: Retirada.", puerta1Retirada);
             return;
         }
 
@@ -157,6 +172,7 @@ public class Chapter1EnvironmentController : MonoBehaviour
             SetDoorLocked(puerta2Animation, false);
             SetDoorLocked(puerta3Animation, true);
             HighlightStage("Puerta2");
+            SetObjective("La Puerta 2 está activa: entender sin quedarse quieto.", puerta2Entender);
             return;
         }
 
@@ -167,6 +183,7 @@ public class Chapter1EnvironmentController : MonoBehaviour
             SetDoorLocked(puerta2Animation, true);
             SetDoorLocked(puerta3Animation, false);
             HighlightStage("Puerta3");
+            SetObjective("La Puerta 3 está activa: compromiso.", puerta3Compromiso);
             return;
         }
 
@@ -177,6 +194,7 @@ public class Chapter1EnvironmentController : MonoBehaviour
             SetDoorLocked(puerta2Animation, true);
             SetDoorLocked(puerta3Animation, true);
             HighlightStage("Estacion4");
+            SetObjective("Abre el Archivo de preguntas.", estacion4Preguntas);
         }
     }
 
@@ -194,6 +212,7 @@ public class Chapter1EnvironmentController : MonoBehaviour
         DoorAnimationBridge puerta2DoorAnimation,
         DoorAnimationBridge puerta3DoorAnimation,
         RewardVisualController rewardController,
+        Chapter1GuidanceController guidance,
         GameObject[] markers,
         Light[] lights)
     {
@@ -210,6 +229,7 @@ public class Chapter1EnvironmentController : MonoBehaviour
         puerta2Animation = puerta2DoorAnimation;
         puerta3Animation = puerta3DoorAnimation;
         rewardVisual = rewardController;
+        guidanceController = guidance;
         progressMarkers = markers;
         ambientLights = lights;
     }
@@ -250,6 +270,7 @@ public class Chapter1EnvironmentController : MonoBehaviour
         if (stageName.Equals("Final", StringComparison.OrdinalIgnoreCase))
         {
             SetProgressMarker(4);
+            SetObjective("Has desbloqueado la Brújula del Compromiso.", brujulaDelCompromiso);
         }
     }
 
@@ -340,6 +361,14 @@ public class Chapter1EnvironmentController : MonoBehaviour
         if (target != null)
         {
             target.PlayHighlight();
+        }
+    }
+
+    private void SetObjective(string text, GameObject target)
+    {
+        if (guidanceController != null)
+        {
+            guidanceController.SetObjective(text, target != null ? target.transform : null);
         }
     }
 }
