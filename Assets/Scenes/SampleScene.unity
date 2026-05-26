@@ -801,7 +801,7 @@ TextMesh:
   m_Anchor: 4
   m_Alignment: 1
   m_TabSize: 4
-  m_FontSize: 48
+  m_FontSize: 20
   m_FontStyle: 0
   m_RichText: 1
   m_Font: {fileID: 0}
@@ -1304,7 +1304,7 @@ Transform:
   m_GameObject: {fileID: 234167542}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -202.9648, y: 3.96, z: 6.514223}
+  m_LocalPosition: {x: -202.9648, y: 3.96, z: 5.19}
   m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1320,6 +1320,7 @@ GameObject:
   m_Component:
   - component: {fileID: 236742414}
   - component: {fileID: 236742413}
+  - component: {fileID: 236742415}
   m_Layer: 0
   m_Name: GuidanceLight
   m_TagString: Untagged
@@ -1401,12 +1402,41 @@ Transform:
   m_GameObject: {fileID: 236742412}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.7, z: -0.8}
+  m_LocalPosition: {x: 0, y: 0.5, z: -0.8}
   m_LocalScale: {x: 0.6666667, y: 0.33333334, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 495562925}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &236742415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 236742412}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &319570404
 GameObject:
   m_ObjectHideFlags: 0
@@ -1600,6 +1630,7 @@ GameObject:
   m_Component:
   - component: {fileID: 433025622}
   - component: {fileID: 433025621}
+  - component: {fileID: 433025623}
   m_Layer: 0
   m_Name: GuidanceLight
   m_TagString: Untagged
@@ -1681,12 +1712,41 @@ Transform:
   m_GameObject: {fileID: 433025620}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.7, z: -0.8}
+  m_LocalPosition: {x: 0, y: 0.5, z: -0.8}
   m_LocalScale: {x: 0.6666667, y: 0.33333334, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 951979336}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &433025623
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 433025620}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &433942738
 GameObject:
   m_ObjectHideFlags: 0
@@ -1871,8 +1931,8 @@ Transform:
   m_GameObject: {fileID: 477116981}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.8}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -0.000000079934, z: -1.14}
+  m_LocalScale: {x: 0.644384, y: 0.5293986, z: 0.63406074}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1621378905}
@@ -2902,7 +2962,7 @@ Transform:
   m_GameObject: {fileID: 633909597}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.7, z: -0.8}
+  m_LocalPosition: {x: 0, y: 0.5, z: -0.8}
   m_LocalScale: {x: 0.6666667, y: 0.33333334, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3196,8 +3256,8 @@ Transform:
   m_GameObject: {fileID: 705730341}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: -0, w: 0}
-  m_LocalPosition: {x: -199.9648, y: 1.56, z: 11.514223}
-  m_LocalScale: {x: 4.2, y: 2.4, z: 0.2}
+  m_LocalPosition: {x: -200.63, y: 1.56, z: 2.6}
+  m_LocalScale: {x: 0.95789397, y: 0.54736805, z: 0.045614}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2137922149}
@@ -3752,8 +3812,8 @@ Transform:
   m_GameObject: {fileID: 938243666}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.8}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -0.000000079934, z: -0.2}
+  m_LocalScale: {x: 0.49701315, y: 0.43498436, z: 0.5807911}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 951979336}
@@ -4586,6 +4646,7 @@ MonoBehaviour:
   puerta2Animation: {fileID: 951979337}
   puerta3Animation: {fileID: 495562926}
   rewardVisual: {fileID: 167393033}
+  guidanceController: {fileID: 0}
   progressMarkers:
   - {fileID: 234167542}
   - {fileID: 1913169111}
@@ -5100,8 +5161,8 @@ Transform:
   m_GameObject: {fileID: 1543071926}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.8}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -0.000000079934, z: 0.6}
+  m_LocalScale: {x: 0.538879, y: 0.45788, z: 0.625052}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 495562925}
@@ -5414,7 +5475,7 @@ TextMesh:
   m_Anchor: 4
   m_Alignment: 1
   m_TabSize: 4
-  m_FontSize: 48
+  m_FontSize: 20
   m_FontStyle: 0
   m_RichText: 1
   m_Font: {fileID: 0}
@@ -6590,6 +6651,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1848790734}
   - component: {fileID: 1848790733}
+  - component: {fileID: 1848790735}
   m_Layer: 0
   m_Name: GuidanceLight
   m_TagString: Untagged
@@ -6677,6 +6739,35 @@ Transform:
   m_Children: []
   m_Father: {fileID: 705730342}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1848790735
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848790732}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &1864392956 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: f33ace9a751a0dd44830df37ae4f905f, type: 3}
@@ -6943,7 +7034,7 @@ TextMesh:
   m_Anchor: 4
   m_Alignment: 1
   m_TabSize: 4
-  m_FontSize: 48
+  m_FontSize: 20
   m_FontStyle: 0
   m_RichText: 1
   m_Font: {fileID: 0}
