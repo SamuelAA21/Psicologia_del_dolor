@@ -17,6 +17,12 @@ public class Chapter1EnvironmentController : MonoBehaviour
     [SerializeField] private GameObject estacion4Preguntas;
     [SerializeField] private GameObject brujulaDelCompromiso;
 
+    [Header("Interaccion")]
+    [SerializeField] private NarrativeInteractable puerta1Interactable;
+    [SerializeField] private NarrativeInteractable puerta2Interactable;
+    [SerializeField] private NarrativeInteractable puerta3Interactable;
+    [SerializeField] private NarrativeInteractable estacion4Interactable;
+
     [Header("Animacion de puertas")]
     [SerializeField] private DoorAnimationBridge puerta1Animation;
     [SerializeField] private DoorAnimationBridge puerta2Animation;
@@ -75,6 +81,17 @@ public class Chapter1EnvironmentController : MonoBehaviour
         Instance.UnlockReward();
     }
 
+    [YarnCommand("chapter1_unlock")]
+    public static void UnlockStageFromYarn(string stageName)
+    {
+        if (Instance == null)
+        {
+            return;
+        }
+
+        Instance.UnlockStage(stageName);
+    }
+
     public void SetStage(string stageName)
     {
         if (string.IsNullOrWhiteSpace(stageName))
@@ -83,15 +100,32 @@ public class Chapter1EnvironmentController : MonoBehaviour
         }
 
         CurrentStage = stageName;
-        avatarClinico?.SetActive(true);
-        avatarAnimation?.PlayTalk();
+
+        if (avatarClinico != null)
+        {
+            avatarClinico.SetActive(true);
+        }
+
+        if (avatarAnimation != null)
+        {
+            avatarAnimation.PlayTalk();
+        }
+
         HighlightStage(stageName);
         PlayStageFeedback();
+
+        if (stageName.Equals("Intro", StringComparison.OrdinalIgnoreCase))
+        {
+            UnlockStage("Puerta1");
+        }
     }
 
     public void UnlockReward()
     {
-        brujulaDelCompromiso?.SetActive(true);
+        if (brujulaDelCompromiso != null)
+        {
+            brujulaDelCompromiso.SetActive(true);
+        }
 
         if (rewardVisual != null)
         {
@@ -99,35 +133,116 @@ public class Chapter1EnvironmentController : MonoBehaviour
         }
     }
 
+    public void UnlockStage(string stageName)
+    {
+        if (string.IsNullOrWhiteSpace(stageName))
+        {
+            return;
+        }
+
+        if (stageName.Equals("Puerta1", StringComparison.OrdinalIgnoreCase))
+        {
+            SetInteractableLocks(false, true, true, true);
+            SetDoorLocked(puerta1Animation, false);
+            SetDoorLocked(puerta2Animation, true);
+            SetDoorLocked(puerta3Animation, true);
+            HighlightStage("Puerta1");
+            return;
+        }
+
+        if (stageName.Equals("Puerta2", StringComparison.OrdinalIgnoreCase))
+        {
+            SetInteractableLocks(true, false, true, true);
+            SetDoorLocked(puerta1Animation, true);
+            SetDoorLocked(puerta2Animation, false);
+            SetDoorLocked(puerta3Animation, true);
+            HighlightStage("Puerta2");
+            return;
+        }
+
+        if (stageName.Equals("Puerta3", StringComparison.OrdinalIgnoreCase))
+        {
+            SetInteractableLocks(true, true, false, true);
+            SetDoorLocked(puerta1Animation, true);
+            SetDoorLocked(puerta2Animation, true);
+            SetDoorLocked(puerta3Animation, false);
+            HighlightStage("Puerta3");
+            return;
+        }
+
+        if (stageName.Equals("Estacion4", StringComparison.OrdinalIgnoreCase))
+        {
+            SetInteractableLocks(true, true, true, false);
+            SetDoorLocked(puerta1Animation, true);
+            SetDoorLocked(puerta2Animation, true);
+            SetDoorLocked(puerta3Animation, true);
+            HighlightStage("Estacion4");
+        }
+    }
+
+    public void ConfigurePlaceholders(
+        GameObject puerta1,
+        GameObject puerta2,
+        GameObject puerta3,
+        GameObject estacion4,
+        GameObject brujula,
+        NarrativeInteractable puerta1NarrativeInteractable,
+        NarrativeInteractable puerta2NarrativeInteractable,
+        NarrativeInteractable puerta3NarrativeInteractable,
+        NarrativeInteractable estacion4NarrativeInteractable,
+        DoorAnimationBridge puerta1DoorAnimation,
+        DoorAnimationBridge puerta2DoorAnimation,
+        DoorAnimationBridge puerta3DoorAnimation,
+        RewardVisualController rewardController,
+        GameObject[] markers,
+        Light[] lights)
+    {
+        puerta1Retirada = puerta1;
+        puerta2Entender = puerta2;
+        puerta3Compromiso = puerta3;
+        estacion4Preguntas = estacion4;
+        brujulaDelCompromiso = brujula;
+        puerta1Interactable = puerta1NarrativeInteractable;
+        puerta2Interactable = puerta2NarrativeInteractable;
+        puerta3Interactable = puerta3NarrativeInteractable;
+        estacion4Interactable = estacion4NarrativeInteractable;
+        puerta1Animation = puerta1DoorAnimation;
+        puerta2Animation = puerta2DoorAnimation;
+        puerta3Animation = puerta3DoorAnimation;
+        rewardVisual = rewardController;
+        progressMarkers = markers;
+        ambientLights = lights;
+    }
+
     private void HighlightStage(string stageName)
     {
         if (stageName.Equals("Puerta1", StringComparison.OrdinalIgnoreCase))
         {
-            puerta1Retirada?.SetActive(true);
-            puerta1Animation?.PlayHighlight();
+            SetActiveIfAssigned(puerta1Retirada, true);
+            PlayDoorHighlight(puerta1Animation);
             SetProgressMarker(0);
             return;
         }
 
         if (stageName.Equals("Puerta2", StringComparison.OrdinalIgnoreCase))
         {
-            puerta2Entender?.SetActive(true);
-            puerta2Animation?.PlayHighlight();
+            SetActiveIfAssigned(puerta2Entender, true);
+            PlayDoorHighlight(puerta2Animation);
             SetProgressMarker(1);
             return;
         }
 
         if (stageName.Equals("Puerta3", StringComparison.OrdinalIgnoreCase))
         {
-            puerta3Compromiso?.SetActive(true);
-            puerta3Animation?.PlayHighlight();
+            SetActiveIfAssigned(puerta3Compromiso, true);
+            PlayDoorHighlight(puerta3Animation);
             SetProgressMarker(2);
             return;
         }
 
         if (stageName.Equals("Estacion4", StringComparison.OrdinalIgnoreCase))
         {
-            estacion4Preguntas?.SetActive(true);
+            SetActiveIfAssigned(estacion4Preguntas, true);
             SetProgressMarker(3);
             return;
         }
@@ -185,6 +300,46 @@ public class Chapter1EnvironmentController : MonoBehaviour
             {
                 ambientLights[i].enabled = i <= activeIndex;
             }
+        }
+    }
+
+    private void SetInteractableLocks(bool puerta1Locked, bool puerta2Locked, bool puerta3Locked, bool estacion4Locked)
+    {
+        SetInteractableLocked(puerta1Interactable, puerta1Locked);
+        SetInteractableLocked(puerta2Interactable, puerta2Locked);
+        SetInteractableLocked(puerta3Interactable, puerta3Locked);
+        SetInteractableLocked(estacion4Interactable, estacion4Locked);
+    }
+
+    private static void SetActiveIfAssigned(GameObject target, bool active)
+    {
+        if (target != null)
+        {
+            target.SetActive(active);
+        }
+    }
+
+    private static void SetInteractableLocked(NarrativeInteractable target, bool locked)
+    {
+        if (target != null)
+        {
+            target.SetLocked(locked);
+        }
+    }
+
+    private static void SetDoorLocked(DoorAnimationBridge target, bool locked)
+    {
+        if (target != null)
+        {
+            target.SetLocked(locked);
+        }
+    }
+
+    private static void PlayDoorHighlight(DoorAnimationBridge target)
+    {
+        if (target != null)
+        {
+            target.PlayHighlight();
         }
     }
 }

@@ -10,6 +10,11 @@ public class RewardVisualController : MonoBehaviour
     [SerializeField] private AudioSource unlockAudioSource;
     [SerializeField] private ParticleSystem[] unlockParticles;
 
+    public void Configure(GameObject targetRewardObject)
+    {
+        rewardObject = targetRewardObject;
+    }
+
     private void Awake()
     {
         if (rewardObject == null)

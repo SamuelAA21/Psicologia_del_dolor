@@ -16,14 +16,9 @@ Avatar Clínico: Has entrado a una clase. Has cruzado el umbral de un territorio
 
 Avatar Clínico: Lo que elijas aquí definirá cómo se abrirá el resto del mapa.
 
--> Entrar a la Puerta 1: Retirada
-    <<jump Puerta1>>
+Avatar Clínico: Frente a ti hay tres puertas. No debes elegirlas desde aquí; debes acercarte a la que se ilumine.
 
--> Entrar a la Puerta 2: Entender sin cambiar
-    <<jump Puerta2>>
-
--> Entrar a la Puerta 3: Compromiso
-    <<jump Puerta3>>
+Avatar Clínico: La primera puerta se abrirá cuando estés preparado para mirar la retirada sin juzgarla.
 ===
 
 title: Puerta1
@@ -40,14 +35,16 @@ Avatar Clínico: No te prometo magia. Te prometo un mapa más honesto que el cir
     Jugador: Estoy agotado, pero quiero mirar antes de irme.
     Avatar Clínico: Eso basta para abrir la siguiente puerta. No necesito certeza total; necesito disposición.
     <<set $disposicion += 1>>
-    <<jump Puerta2>>
+    <<chapter1_unlock "Puerta2">>
+    Avatar Clínico: La segunda puerta se ha iluminado. Acércate cuando quieras continuar.
 
 -> No creo que esto cambie nada; prefiero salir.
     Jugador: No creo que esto cambie nada; prefiero salir.
     Avatar Clínico: Puedes salir. Pero si vuelves, el corredor seguirá aquí.
     Avatar Clínico: Ningún mapa se revela a quien no entra.
     <<set $resistencia += 1>>
-    <<jump Puerta2>>
+    <<chapter1_unlock "Puerta2">>
+    Avatar Clínico: Aun así, la segunda puerta se ha iluminado. Puedes acercarte sin prometer certeza.
 ===
 
 title: Puerta2
@@ -65,13 +62,15 @@ Avatar Clínico: Comprender una frase no basta si no cambia conducta, movimiento
     Avatar Clínico: Has comprendido la frase, pero no has cruzado el puente.
     Avatar Clínico: Sin acción, el entorno no cambia.
     <<set $comprension_superficial += 1>>
-    <<jump Puerta3>>
+    <<chapter1_unlock "Puerta3">>
+    Avatar Clínico: La tercera puerta se ha iluminado. Allí la comprensión debe convertirse en postura.
 
 -> Quiero probarlo en mi vida real.
     Jugador: Quiero probarlo en mi vida real.
     Avatar Clínico: Ahora sí. Cuando decides aplicar, el conocimiento deja de ser eco y se convierte en herramienta.
     <<set $aplicacion += 1>>
-    <<jump Puerta3>>
+    <<chapter1_unlock "Puerta3">>
+    Avatar Clínico: La tercera puerta se ha iluminado. Allí empieza el compromiso.
 ===
 
 title: Puerta3
@@ -89,14 +88,16 @@ Avatar Clínico: Tu tarea no es sentirte invencible; es recuperar agencia cuando
     Avatar Clínico: Has activado la ruta del compromiso.
     Avatar Clínico: A partir de aquí, cada capítulo te entregará una llave.
     <<set $compromiso += 1>>
-    <<jump Estacion4>>
+    <<chapter1_unlock "Estacion4">>
+    Avatar Clínico: El archivo de preguntas se ha activado. Acércate al panel para ordenar lo que necesitas saber.
 
 -> Aún tengo miedo, pero no quiero retroceder.
     Jugador: Aún tengo miedo, pero no quiero retroceder.
     Avatar Clínico: El miedo puede viajar contigo sin conducir la expedición.
     <<set $compromiso += 1>>
     <<set $miedo_reconocido += 1>>
-    <<jump Estacion4>>
+    <<chapter1_unlock "Estacion4">>
+    Avatar Clínico: El archivo de preguntas se ha activado. Acércate al panel; el miedo también puede preguntar.
 ===
 
 title: Estacion4

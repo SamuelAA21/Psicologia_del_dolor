@@ -10,6 +10,12 @@ public class DialoguePlayerControlLock : MonoBehaviour
 
     private bool lastDialogueState;
 
+    public void Configure(DialogueRunner runner, PlayerController controller)
+    {
+        dialogueRunner = runner;
+        playerController = controller;
+    }
+
     private void Awake()
     {
         if (dialogueRunner == null)

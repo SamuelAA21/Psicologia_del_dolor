@@ -9,12 +9,6 @@ public class MiniGameBridge : MonoBehaviour
     [YarnCommand("iniciar_respiracion")]
     public void IniciarRespiracion()
     {
-        DialogueRunner dialogueRunner = FindAnyObjectByType<DialogueRunner>();
-        if (dialogueRunner != null)
-        {
-            dialogueRunner.Stop();
-        }
-
         StartCoroutine(LoadMiniGameNextFrame());
     }
 
