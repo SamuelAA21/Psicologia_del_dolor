@@ -46,9 +46,9 @@ public static class Chapter1RuntimePlaceholderSpawner
         DialoguePlayerControlLock controlLock = root.AddComponent<DialoguePlayerControlLock>();
         controlLock.Configure(dialogueRunner, player);
 
-        DoorSetup door1 = CreateDoor(root.transform, "Puerta1_Retirada", "Puerta 1\nRetirada", "Puerta1", origin + forward * 8f - right * 3f, facingPlayer, dialogueRunner, false);
-        DoorSetup door2 = CreateDoor(root.transform, "Puerta2_Entender", "Puerta 2\nEntender", "Puerta2", origin + forward * 8f, facingPlayer, dialogueRunner, true);
-        DoorSetup door3 = CreateDoor(root.transform, "Puerta3_Compromiso", "Puerta 3\nCompromiso", "Puerta3", origin + forward * 8f + right * 3f, facingPlayer, dialogueRunner, true);
+        DoorSetup door1 = CreateDoor(root.transform, "Puerta1_Retirada", "Puerta 1", "Retirada", "Puerta1", origin + forward * 8f - right * 3f, facingPlayer, dialogueRunner, false);
+        DoorSetup door2 = CreateDoor(root.transform, "Puerta2_Entender", "Puerta 2", "Entender", "Puerta2", origin + forward * 8f, facingPlayer, dialogueRunner, true);
+        DoorSetup door3 = CreateDoor(root.transform, "Puerta3_Compromiso", "Puerta 3", "Compromiso", "Puerta3", origin + forward * 8f + right * 3f, facingPlayer, dialogueRunner, true);
         PanelSetup panel = CreateQuestionPanel(root.transform, origin + forward * 13f, facingPlayer, dialogueRunner);
         GameObject reward = CreateReward(root.transform, origin + forward * 13f + right * 2.8f + Vector3.up * 1.2f);
 
@@ -79,36 +79,51 @@ public static class Chapter1RuntimePlaceholderSpawner
         environment.UnlockStage("Puerta1");
     }
 
-    private static DoorSetup CreateDoor(Transform parent, string name, string label, string yarnNode, Vector3 position, Quaternion rotation, DialogueRunner dialogueRunner, bool locked)
+    private static DoorSetup CreateDoor(Transform parent, string name, string title, string subtitle, string yarnNode, Vector3 position, Quaternion rotation, DialogueRunner dialogueRunner, bool locked)
     {
-        GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        GameObject visual = new GameObject(name);
         visual.name = name;
         visual.transform.SetParent(parent);
-        visual.transform.SetPositionAndRotation(position + Vector3.up * 1.5f, rotation);
-        visual.transform.localScale = new Vector3(1.5f, 3f, 0.25f);
-        SetMaterial(visual, new Color(0.18f, 0.21f, 0.26f));
+        visual.transform.SetPositionAndRotation(position + Vector3.up * 1.15f, rotation);
+
+        BoxCollider solidCollider = visual.AddComponent<BoxCollider>();
+        solidCollider.center = new Vector3(0f, 0.25f, 0f);
+        solidCollider.size = new Vector3(1.4f, 2.35f, 0.45f);
+
+        bool hasModel = TryAddModelChild(visual.transform, "DoorwayModel", "wall-doorway", new Vector3(0f, -1.15f, 0f), Vector3.one * 0.82f, new Color(0.58f, 0.72f, 0.88f));
+        hasModel |= TryAddModelChild(visual.transform, "DoorModel", "door-rotate", new Vector3(0f, -1.15f, -0.03f), Vector3.one * 0.82f, new Color(0.16f, 0.2f, 0.25f));
+        if (!hasModel)
+        {
+            GameObject fallbackBody = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            fallbackBody.name = "FallbackDoorBody";
+            fallbackBody.transform.SetParent(visual.transform, false);
+            fallbackBody.transform.localScale = new Vector3(1.2f, 2.3f, 0.22f);
+            Object.Destroy(fallbackBody.GetComponent<Collider>());
+            SetMaterial(fallbackBody, new Color(0.18f, 0.21f, 0.26f));
+        }
 
         DoorAnimationBridge animation = visual.AddComponent<DoorAnimationBridge>();
-        CreateText(visual.transform, "Label", label, new Vector3(0f, 0.35f, -0.65f), Color.white);
+        CreateText(visual.transform, "Title", title, new Vector3(0f, 1.28f, -0.58f), Color.white, 0.026f);
+        CreateText(visual.transform, "Subtitle", subtitle, new Vector3(0f, 1.08f, -0.58f), new Color(0.78f, 0.9f, 1f), 0.018f);
 
-        GameObject prompt = CreateText(visual.transform, "Prompt", "Presiona E para abrir", new Vector3(0f, 1.45f, -0.85f), new Color(0.65f, 0.9f, 1f));
+        GameObject prompt = CreateText(visual.transform, "Prompt", "E  Abrir", new Vector3(0f, 0.65f, -0.72f), new Color(0.65f, 0.95f, 1f), 0.018f);
         prompt.SetActive(false);
 
-        GameObject lockedPrompt = CreateText(visual.transform, "LockedPrompt", "Bloqueada", new Vector3(0f, 1.45f, -0.85f), new Color(1f, 0.55f, 0.45f));
+        GameObject lockedPrompt = CreateText(visual.transform, "LockedPrompt", "Bloqueada", new Vector3(0f, 0.65f, -0.72f), new Color(1f, 0.55f, 0.45f), 0.018f);
         lockedPrompt.SetActive(false);
 
-        Light doorLight = CreateLight(visual.transform, "GuidanceLight", new Vector3(0f, 1.7f, -0.8f), new Color(0.35f, 0.75f, 1f), 3.5f, 4f);
+        Light doorLight = CreateLight(visual.transform, "GuidanceLight", new Vector3(0f, 1.35f, -0.5f), new Color(0.35f, 0.75f, 1f), 2.2f, 3f);
         doorLight.enabled = !locked;
         doorLight.gameObject.AddComponent<Chapter1AmbientMotion>().Configure(false, 0f, false, Vector3.zero, false);
 
         GameObject trigger = new GameObject("InteractionTrigger");
         trigger.transform.SetParent(visual.transform);
-        trigger.transform.localPosition = new Vector3(0f, 0f, -0.8f);
+        trigger.transform.localPosition = new Vector3(0f, 0f, -0.65f);
         trigger.transform.localRotation = Quaternion.identity;
 
         BoxCollider collider = trigger.AddComponent<BoxCollider>();
         collider.isTrigger = true;
-        collider.size = new Vector3(2.3f, 2.7f, 2.2f);
+        collider.size = new Vector3(1.9f, 2.5f, 1.8f);
 
         NarrativeInteractable interactable = trigger.AddComponent<NarrativeInteractable>();
         interactable.SetYarnNodeName(yarnNode);
@@ -124,33 +139,46 @@ public static class Chapter1RuntimePlaceholderSpawner
 
     private static PanelSetup CreateQuestionPanel(Transform parent, Vector3 position, Quaternion rotation, DialogueRunner dialogueRunner)
     {
-        GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        GameObject visual = new GameObject("Estacion4_Preguntas");
         visual.name = "Estacion4_Preguntas";
         visual.transform.SetParent(parent);
-        visual.transform.SetPositionAndRotation(position + Vector3.up * 1.35f, rotation);
-        visual.transform.localScale = new Vector3(4.2f, 2.4f, 0.2f);
-        SetMaterial(visual, new Color(0.08f, 0.16f, 0.18f));
+        visual.transform.SetPositionAndRotation(position + Vector3.up * 1.05f, rotation);
 
-        CreateText(visual.transform, "Label", "Archivo de preguntas\nInteractua para abrir el cuestionario", new Vector3(0f, 0.2f, -0.65f), new Color(0.75f, 1f, 0.9f));
+        BoxCollider solidCollider = visual.AddComponent<BoxCollider>();
+        solidCollider.size = new Vector3(3.4f, 1.9f, 0.35f);
 
-        GameObject prompt = CreateText(visual.transform, "Prompt", "Presiona E para responder", new Vector3(0f, 1.25f, -0.85f), new Color(0.65f, 1f, 0.8f));
+        bool hasModel = TryAddModelChild(visual.transform, "PanelBaseModel", "indicator-special-area", new Vector3(0f, -0.9f, -0.12f), new Vector3(2.15f, 2.15f, 2.15f), new Color(0.18f, 0.52f, 0.56f));
+        hasModel |= TryAddModelChild(visual.transform, "PanelFrameModel", "wall", new Vector3(0f, -0.95f, 0.06f), new Vector3(2.4f, 1.05f, 0.25f), new Color(0.1f, 0.16f, 0.2f));
+        if (!hasModel)
+        {
+            GameObject fallbackPanel = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            fallbackPanel.name = "FallbackPanelBody";
+            fallbackPanel.transform.SetParent(visual.transform, false);
+            fallbackPanel.transform.localScale = new Vector3(3.4f, 1.9f, 0.2f);
+            Object.Destroy(fallbackPanel.GetComponent<Collider>());
+            SetMaterial(fallbackPanel, new Color(0.08f, 0.16f, 0.18f));
+        }
+
+        CreateText(visual.transform, "Label", "Archivo de preguntas", new Vector3(0f, 0.62f, -0.6f), new Color(0.75f, 1f, 0.9f), 0.024f);
+
+        GameObject prompt = CreateText(visual.transform, "Prompt", "E  Responder", new Vector3(0f, 0.25f, -0.7f), new Color(0.65f, 1f, 0.8f), 0.018f);
         prompt.SetActive(false);
 
-        GameObject lockedPrompt = CreateText(visual.transform, "LockedPrompt", "Completa las puertas primero", new Vector3(0f, 1.25f, -0.85f), new Color(1f, 0.55f, 0.45f));
+        GameObject lockedPrompt = CreateText(visual.transform, "LockedPrompt", "Completa las puertas", new Vector3(0f, 0.25f, -0.7f), new Color(1f, 0.55f, 0.45f), 0.018f);
         lockedPrompt.SetActive(false);
 
-        Light panelLight = CreateLight(visual.transform, "GuidanceLight", new Vector3(0f, 1.3f, -0.85f), new Color(0.45f, 1f, 0.75f), 4.5f, 4f);
+        Light panelLight = CreateLight(visual.transform, "GuidanceLight", new Vector3(0f, 0.9f, -0.75f), new Color(0.45f, 1f, 0.75f), 2.8f, 3.2f);
         panelLight.enabled = false;
         panelLight.gameObject.AddComponent<Chapter1AmbientMotion>().Configure(false, 0f, false, Vector3.zero, false);
 
         GameObject trigger = new GameObject("InteractionTrigger");
         trigger.transform.SetParent(visual.transform);
-        trigger.transform.localPosition = new Vector3(0f, 0f, -0.9f);
+        trigger.transform.localPosition = new Vector3(0f, 0f, -0.75f);
         trigger.transform.localRotation = Quaternion.identity;
 
         BoxCollider collider = trigger.AddComponent<BoxCollider>();
         collider.isTrigger = true;
-        collider.size = new Vector3(4.8f, 2.7f, 2.2f);
+        collider.size = new Vector3(4f, 2.2f, 1.8f);
 
         NarrativeInteractable interactable = trigger.AddComponent<NarrativeInteractable>();
         interactable.SetYarnNodeName("Estacion4");
@@ -165,12 +193,21 @@ public static class Chapter1RuntimePlaceholderSpawner
 
     private static GameObject CreateReward(Transform parent, Vector3 position)
     {
-        GameObject reward = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        GameObject reward = new GameObject("BrujulaDelCompromiso");
         reward.name = "BrujulaDelCompromiso";
         reward.transform.SetParent(parent);
         reward.transform.position = position;
-        reward.transform.localScale = new Vector3(0.55f, 0.55f, 0.55f);
-        SetMaterial(reward, new Color(1f, 0.82f, 0.25f));
+
+        bool hasModel = TryAddModelChild(reward.transform, "CompassPlaceholderModel", "coin", Vector3.zero, Vector3.one * 0.9f, new Color(1f, 0.82f, 0.25f));
+        if (!hasModel)
+        {
+            GameObject fallbackReward = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            fallbackReward.name = "FallbackRewardBody";
+            fallbackReward.transform.SetParent(reward.transform, false);
+            fallbackReward.transform.localScale = new Vector3(0.55f, 0.55f, 0.55f);
+            Object.Destroy(fallbackReward.GetComponent<Collider>());
+            SetMaterial(fallbackReward, new Color(1f, 0.82f, 0.25f));
+        }
 
         RewardVisualController rewardVisual = reward.AddComponent<RewardVisualController>();
         rewardVisual.Configure(reward);
@@ -185,18 +222,28 @@ public static class Chapter1RuntimePlaceholderSpawner
 
     private static GameObject CreateMarker(Transform parent, string name, Vector3 position)
     {
-        GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        GameObject marker = new GameObject(name);
         marker.name = name;
         marker.transform.SetParent(parent);
         marker.transform.position = position;
-        marker.transform.localScale = Vector3.one * 0.25f;
-        SetMaterial(marker, new Color(0.45f, 0.9f, 1f));
+
+        bool hasModel = TryAddModelChild(marker.transform, "MarkerModel", "indicator-special-arrow", Vector3.zero, Vector3.one * 0.38f, new Color(0.35f, 0.9f, 1f));
+        if (!hasModel)
+        {
+            GameObject fallbackMarker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            fallbackMarker.name = "FallbackMarkerBody";
+            fallbackMarker.transform.SetParent(marker.transform, false);
+            fallbackMarker.transform.localScale = Vector3.one * 0.25f;
+            Object.Destroy(fallbackMarker.GetComponent<Collider>());
+            SetMaterial(fallbackMarker, new Color(0.45f, 0.9f, 1f));
+        }
+
         marker.AddComponent<Chapter1AmbientMotion>().Configure(true, 0.1f, true, new Vector3(0f, 70f, 0f), true);
         marker.SetActive(false);
         return marker;
     }
 
-    private static GameObject CreateText(Transform parent, string name, string text, Vector3 localPosition, Color color)
+    private static GameObject CreateText(Transform parent, string name, string text, Vector3 localPosition, Color color, float characterSize)
     {
         GameObject target = new GameObject(name);
         target.transform.SetParent(parent);
@@ -207,8 +254,8 @@ public static class Chapter1RuntimePlaceholderSpawner
         textMesh.text = text;
         textMesh.anchor = TextAnchor.MiddleCenter;
         textMesh.alignment = TextAlignment.Center;
-        textMesh.characterSize = 0.08f;
-        textMesh.fontSize = 48;
+        textMesh.characterSize = characterSize;
+        textMesh.fontSize = 36;
         textMesh.color = color;
         target.AddComponent<Chapter1Billboard>();
         return target;
@@ -254,6 +301,47 @@ public static class Chapter1RuntimePlaceholderSpawner
         }
 
         renderer.material = material;
+    }
+
+    private static bool TryAddModelChild(Transform parent, string childName, string resourceName, Vector3 localPosition, Vector3 localScale, Color tint)
+    {
+        GameObject prefab = Resources.Load<GameObject>($"KenneyPrototypeKit/Models/{resourceName}");
+        if (prefab == null)
+        {
+            return false;
+        }
+
+        GameObject instance = Object.Instantiate(prefab, parent);
+        instance.name = childName;
+        instance.transform.localPosition = localPosition;
+        instance.transform.localRotation = Quaternion.identity;
+        instance.transform.localScale = localScale;
+        TintRenderers(instance, tint);
+        return true;
+    }
+
+    private static void TintRenderers(GameObject root, Color color)
+    {
+        Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer renderer in renderers)
+        {
+            if (renderer == null || renderer.sharedMaterial == null)
+            {
+                continue;
+            }
+
+            Material material = new Material(renderer.sharedMaterial);
+            if (material.HasProperty("_BaseColor"))
+            {
+                material.SetColor("_BaseColor", color);
+            }
+            else if (material.HasProperty("_Color"))
+            {
+                material.SetColor("_Color", color);
+            }
+
+            renderer.material = material;
+        }
     }
 
     private readonly struct DoorSetup
