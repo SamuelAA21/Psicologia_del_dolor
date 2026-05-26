@@ -1,15 +1,15 @@
 title: Intro
 ---
-<<set $disposicion = 0>>
-<<set $resistencia = 0>>
-<<set $comprension_superficial = 0>>
-<<set $aplicacion = 0>>
-<<set $compromiso = 0>>
-<<set $miedo_reconocido = 0>>
-<<set $pregunta_que_ocurre = false>>
-<<set $pregunta_ayuda = false>>
-<<set $pregunta_siguiente = false>>
-<<set $brujula_compromiso = false>>
+<<declare $disposicion = 0 as number>>
+<<declare $resistencia = 0 as number>>
+<<declare $comprension_superficial = 0 as number>>
+<<declare $aplicacion = 0 as number>>
+<<declare $compromiso = 0 as number>>
+<<declare $miedo_reconocido = 0 as number>>
+<<declare $pregunta_que_ocurre = false as bool>>
+<<declare $pregunta_ayuda = false as bool>>
+<<declare $pregunta_siguiente = false as bool>>
+<<declare $brujula_compromiso = false as bool>>
 <<chapter1_stage "Intro">>
 
 Avatar Clínico: Has entrado a una clase. Has cruzado el umbral de un territorio que influye en cuerpo, atención y esperanza.
