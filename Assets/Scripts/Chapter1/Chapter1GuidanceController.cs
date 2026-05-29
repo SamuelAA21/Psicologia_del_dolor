@@ -85,7 +85,6 @@ public class Chapter1GuidanceController : MonoBehaviour
         GameObject canvasObject = new GameObject("Chapter1_ObjectiveHUD");
         hudCanvas = canvasObject.AddComponent<Canvas>();
         hudCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        hudCanvas.sortingOrder = 20;
         canvasObject.AddComponent<CanvasScaler>();
         canvasObject.AddComponent<GraphicRaycaster>();
 

@@ -245,10 +245,8 @@ public static class Chapter1ScenePlaceholderBuilder
         AddOrGet<Chapter1Billboard>(target);
 
         MeshRenderer renderer = target.GetComponent<MeshRenderer>();
-        if (renderer != null)
-        {
-            renderer.sortingOrder = 10;
-        }
+        // Do not force a sorting order here; let Unity determine render order
+        // to avoid UI/dialogue overlapping issues.
 
         return target;
     }

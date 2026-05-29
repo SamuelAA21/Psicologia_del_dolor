@@ -31,14 +31,13 @@ public static class YarnUiKenneySkin
         Sprite dialogueSprite = LoadSprite("button_rectangle_depth_gradient", new Vector4(22f, 22f, 22f, 22f));
         Sprite buttonSprite = LoadSprite("button_rectangle_depth_flat", new Vector4(20f, 20f, 20f, 20f));
         Sprite buttonBorderSprite = LoadSprite("button_rectangle_depth_border", new Vector4(20f, 20f, 20f, 20f));
-        Sprite iconSprite = LoadSprite("star_outline", Vector4.zero);
 
         Transform linePresenter = FindTransform("Line Presenter");
         if (linePresenter != null)
         {
             SkinPanel(linePresenter, dialogueSprite, new Color(0.03f, 0.08f, 0.14f, 0.94f));
             ResizeBottomPanel(linePresenter, 64f, 42f, 420f, 172f);
-            AddCornerIcon(linePresenter, iconSprite);
+            // Corner icon (star) removed to avoid decorative overlap with dialog content.
         }
 
         Transform optionsPresenter = FindTransform("Options Presenter");
