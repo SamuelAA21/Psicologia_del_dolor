@@ -1,8 +1,10 @@
+using System.Collections;
 using UnityEngine;
 
 public class GameAudioManager : MonoBehaviour
 {
     public static GameAudioManager Instance { get; private set; }
+    private const string MusicVolumeKey = "GameAudioManager_MusicVolume";
 
     [Header("Volumen")]
     [SerializeField, Range(0f, 1f)] private float masterVolume = 1f;
@@ -13,6 +15,7 @@ public class GameAudioManager : MonoBehaviour
     [Header("Clips")]
     [SerializeField] private AudioClip menuMusic;
     [SerializeField] private AudioClip gameplayMusic;
+    [SerializeField] private AudioClip gameplayAccentMusic;
     [SerializeField] private AudioClip uiClickClip;
     [SerializeField] private AudioClip rewardClip;
     [SerializeField] private AudioClip errorClip;
@@ -20,7 +23,8 @@ public class GameAudioManager : MonoBehaviour
 
     [Header("Recursos por defecto")]
     [SerializeField] private string menuMusicResource = "Audio/MenuMusic";
-    [SerializeField] private string gameplayMusicResource = "Audio/GameplayMusic";
+    [SerializeField] private string gameplayMusicResource = "AmbientalLoop";
+    [SerializeField] private string gameplayAccentMusicResource = "Audio/GameplayMusic";
     [SerializeField] private string uiClickResource = "Audio/UiClick";
     [SerializeField] private string rewardResource = "Audio/Reward";
     [SerializeField] private string errorResource = "Audio/Error";
@@ -29,6 +33,7 @@ public class GameAudioManager : MonoBehaviour
     private AudioSource musicSource;
     private AudioSource uiSource;
     private AudioSource feedbackSource;
+    private Coroutine gameplayMusicRoutine;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void EnsureInstance()
@@ -52,6 +57,7 @@ public class GameAudioManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        musicVolume = PlayerPrefs.GetFloat(MusicVolumeKey, musicVolume);
         LoadMissingClipsFromResources();
         EnsureSources();
         ApplyVolumes();
@@ -79,18 +85,41 @@ public class GameAudioManager : MonoBehaviour
 
     public static void PlayMenuMusic()
     {
-        Instance?.PlayMusic(Instance.menuMusic);
+        if (Instance == null)
+        {
+            return;
+        }
+
+        Instance.StopGameplayMusicRoutine();
+        Instance.PlayMusic(Instance.menuMusic, true);
     }
 
     public static void PlayGameplayMusic()
     {
-        Instance?.PlayMusic(Instance.gameplayMusic);
+        Instance?.StartGameplayMusicRoutine();
     }
 
     public void SetMasterVolume(float value)
     {
         masterVolume = Mathf.Clamp01(value);
         ApplyVolumes();
+    }
+
+    public static float MusicVolume => Instance != null ? Instance.musicVolume : 0f;
+
+    public static void AdjustMusicVolume(float delta)
+    {
+        if (Instance == null)
+        {
+            return;
+        }
+
+        Instance.SetMusicVolume(Instance.musicVolume + delta);
+    }
+
+    public static void SetMusicVolume01(float value)
+    {
+        Instance?.SetMusicVolume(value);
     }
 
     private void EnsureSources()
@@ -100,10 +129,19 @@ public class GameAudioManager : MonoBehaviour
         feedbackSource = EnsureSource("FeedbackSource", false);
     }
 
+    private void SetMusicVolume(float value)
+    {
+        musicVolume = Mathf.Clamp01(value);
+        PlayerPrefs.SetFloat(MusicVolumeKey, musicVolume);
+        PlayerPrefs.Save();
+        ApplyVolumes();
+    }
+
     private void LoadMissingClipsFromResources()
     {
         menuMusic = LoadIfMissing(menuMusic, menuMusicResource);
         gameplayMusic = LoadIfMissing(gameplayMusic, gameplayMusicResource);
+        gameplayAccentMusic = LoadIfMissing(gameplayAccentMusic, gameplayAccentMusicResource);
         uiClickClip = LoadIfMissing(uiClickClip, uiClickResource);
         rewardClip = LoadIfMissing(rewardClip, rewardResource);
         errorClip = LoadIfMissing(errorClip, errorResource);
@@ -137,13 +175,56 @@ public class GameAudioManager : MonoBehaviour
         return source;
     }
 
-    private void PlayMusic(AudioClip clip)
+    private void StartGameplayMusicRoutine()
+    {
+        if (gameplayMusicRoutine != null)
+        {
+            return;
+        }
+
+        if (gameplayMusic == null)
+        {
+            PlayMusic(gameplayAccentMusic, true);
+            return;
+        }
+
+        gameplayMusicRoutine = StartCoroutine(PlayGameplayMusicCycle());
+    }
+
+    private void StopGameplayMusicRoutine()
+    {
+        if (gameplayMusicRoutine == null)
+        {
+            return;
+        }
+
+        StopCoroutine(gameplayMusicRoutine);
+        gameplayMusicRoutine = null;
+    }
+
+    private IEnumerator PlayGameplayMusicCycle()
+    {
+        while (true)
+        {
+            PlayMusic(gameplayMusic, true);
+            yield return new WaitForSecondsRealtime(60f);
+
+            if (gameplayAccentMusic != null)
+            {
+                PlayMusic(gameplayAccentMusic, true);
+                yield return new WaitForSecondsRealtime(45f);
+            }
+        }
+    }
+
+    private void PlayMusic(AudioClip clip, bool loop)
     {
         if (musicSource == null || clip == null || musicSource.clip == clip)
         {
             return;
         }
 
+        musicSource.loop = loop;
         musicSource.clip = clip;
         musicSource.volume = musicVolume * masterVolume;
         musicSource.Play();

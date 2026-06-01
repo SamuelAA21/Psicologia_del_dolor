@@ -15,6 +15,9 @@ public class PauseMenuController : MonoBehaviour
     [SerializeField] private Button resumeButton;
     [SerializeField] private Button mainMenuButton;
     [SerializeField] private Button quitButton;
+    [SerializeField] private Button musicDownButton;
+    [SerializeField] private Button musicUpButton;
+    [SerializeField] private Text musicVolumeText;
     [SerializeField] private DialogueRunner dialogueRunner;
 
     private bool paused;
@@ -71,6 +74,7 @@ public class PauseMenuController : MonoBehaviour
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+            RefreshMusicVolumeText();
         }
     }
 
@@ -98,6 +102,20 @@ public class PauseMenuController : MonoBehaviour
         GameAudioManager.PlayUiClick();
         Time.timeScale = 1f;
         Application.Quit();
+    }
+
+    public void LowerMusicVolume()
+    {
+        GameAudioManager.PlayUiClick();
+        GameAudioManager.AdjustMusicVolume(-0.1f);
+        RefreshMusicVolumeText();
+    }
+
+    public void RaiseMusicVolume()
+    {
+        GameAudioManager.PlayUiClick();
+        GameAudioManager.AdjustMusicVolume(0.1f);
+        RefreshMusicVolumeText();
     }
 
     private void SetPaused(bool value)
@@ -165,18 +183,24 @@ public class PauseMenuController : MonoBehaviour
         panelRect.anchorMax = new Vector2(0.5f, 0.5f);
         panelRect.pivot = new Vector2(0.5f, 0.5f);
         panelRect.anchoredPosition = Vector2.zero;
-        panelRect.sizeDelta = new Vector2(480f, 430f);
+        panelRect.sizeDelta = new Vector2(520f, 510f);
 
-        CreateText(panel.transform, "Title", "PAUSA", 44, FontStyle.Bold, new Vector2(0f, 145f), new Vector2(420f, 70f));
-        CreateText(panel.transform, "Hint", "Esc para volver al juego", 18, FontStyle.Normal, new Vector2(0f, 100f), new Vector2(420f, 34f));
+        CreateText(panel.transform, "Title", "PAUSA", 44, FontStyle.Bold, new Vector2(0f, 185f), new Vector2(440f, 70f));
+        CreateText(panel.transform, "Hint", "Esc para volver al juego", 18, FontStyle.Normal, new Vector2(0f, 140f), new Vector2(440f, 34f));
 
-        resumeButton = CreateButton(panel.transform, "Resume", "REANUDAR", new Vector2(0f, 30f));
-        mainMenuButton = CreateButton(panel.transform, "MainMenu", "MENU INICIAL", new Vector2(0f, -45f));
-        quitButton = CreateButton(panel.transform, "Quit", "SALIR", new Vector2(0f, -120f));
+        resumeButton = CreateButton(panel.transform, "Resume", "REANUDAR", new Vector2(0f, 75f));
+        musicVolumeText = CreateText(panel.transform, "MusicVolume", string.Empty, 20, FontStyle.Bold, new Vector2(0f, 15f), new Vector2(300f, 34f));
+        musicDownButton = CreateButton(panel.transform, "MusicDown", "MUSICA -", new Vector2(-105f, -40f), new Vector2(180f, 48f));
+        musicUpButton = CreateButton(panel.transform, "MusicUp", "MUSICA +", new Vector2(105f, -40f), new Vector2(180f, 48f));
+        mainMenuButton = CreateButton(panel.transform, "MainMenu", "MENU INICIAL", new Vector2(0f, -115f));
+        quitButton = CreateButton(panel.transform, "Quit", "SALIR", new Vector2(0f, -190f));
 
         resumeButton.onClick.AddListener(Resume);
+        musicDownButton.onClick.AddListener(LowerMusicVolume);
+        musicUpButton.onClick.AddListener(RaiseMusicVolume);
         mainMenuButton.onClick.AddListener(ReturnToMainMenu);
         quitButton.onClick.AddListener(QuitGame);
+        RefreshMusicVolumeText();
     }
 
     private bool IsDialogueRunning()
@@ -190,6 +214,11 @@ public class PauseMenuController : MonoBehaviour
     }
 
     private static Button CreateButton(Transform parent, string objectName, string label, Vector2 position)
+    {
+        return CreateButton(parent, objectName, label, position, new Vector2(300f, 54f));
+    }
+
+    private static Button CreateButton(Transform parent, string objectName, string label, Vector2 position, Vector2 size)
     {
         GameObject buttonObject = new GameObject(objectName);
         buttonObject.transform.SetParent(parent, false);
@@ -205,9 +234,9 @@ public class PauseMenuController : MonoBehaviour
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = position;
-        rect.sizeDelta = new Vector2(300f, 54f);
+        rect.sizeDelta = size;
 
-        CreateText(buttonObject.transform, "Label", label, 22, FontStyle.Bold, Vector2.zero, new Vector2(300f, 54f));
+        CreateText(buttonObject.transform, "Label", label, 22, FontStyle.Bold, Vector2.zero, size);
         return button;
     }
 
@@ -255,5 +284,15 @@ public class PauseMenuController : MonoBehaviour
         {
             eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
         }
+    }
+
+    private void RefreshMusicVolumeText()
+    {
+        if (musicVolumeText == null)
+        {
+            return;
+        }
+
+        musicVolumeText.text = $"MUSICA {Mathf.RoundToInt(GameAudioManager.MusicVolume * 100f)}%";
     }
 }
