@@ -5,10 +5,18 @@ public class MiniGameFlowController : MonoBehaviour
     [SerializeField] private BreathingController controller;
     [SerializeField] private string returnSceneName = "SampleScene";
 
+    public BreathingController Controller
+    {
+        get
+        {
+            EnsureController();
+            return controller;
+        }
+    }
+
     private void Start()
     {
-        if (controller == null)
-            controller = FindAnyObjectByType<BreathingController>();
+        EnsureController();
 
         if (controller != null)
         {
@@ -28,5 +36,13 @@ public class MiniGameFlowController : MonoBehaviour
     {
         Chapter1ProgressState.ReportBreathingCompleted();
         SceneLoader.LoadSceneSafe(returnSceneName);
+    }
+
+    private void EnsureController()
+    {
+        if (controller == null)
+        {
+            controller = FindAnyObjectByType<BreathingController>();
+        }
     }
 }

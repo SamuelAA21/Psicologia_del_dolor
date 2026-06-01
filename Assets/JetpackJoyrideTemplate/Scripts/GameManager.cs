@@ -5,9 +5,14 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private bool isGameOver;
     [SerializeField] private string returnSceneName = "SampleScene";
+    [SerializeField, Min(1)] private int maxMistakes = 3;
+
+    private int mistakes;
 
     public bool IsGameOver => isGameOver;
     public bool CanPlay => !isGameOver;
+    public int MaxMistakes => maxMistakes;
+    public int RemainingMistakes => Mathf.Max(0, maxMistakes - mistakes);
 
     private void Awake()
     {
@@ -19,7 +24,26 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
+        mistakes = 0;
         Time.timeScale = 1f;
+    }
+
+    public bool RegisterMistake()
+    {
+        if (isGameOver)
+        {
+            return true;
+        }
+
+        mistakes++;
+
+        if (mistakes >= maxMistakes)
+        {
+            GameOver();
+            return true;
+        }
+
+        return false;
     }
 
     public void GameOver()
@@ -36,6 +60,7 @@ public class GameManager : MonoBehaviour
     public void ResetSession()
     {
         isGameOver = false;
+        mistakes = 0;
         Time.timeScale = 1f;
     }
 }

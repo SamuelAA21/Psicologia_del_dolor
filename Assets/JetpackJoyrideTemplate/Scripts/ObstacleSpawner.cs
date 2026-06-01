@@ -21,10 +21,7 @@ public class ObstacleSpawner : MonoBehaviour
 
     private void Awake()
     {
-        if (breathingController == null)
-        {
-            breathingController = FindAnyObjectByType<BreathingController>();
-        }
+        ResolveBreathingController();
 
         if (targetCamera == null)
         {
@@ -177,11 +174,35 @@ public class ObstacleSpawner : MonoBehaviour
 
     private bool CanSpawn()
     {
+        ResolveBreathingController();
+
         if (GameManager.Instance != null && !GameManager.Instance.CanPlay)
         {
             return false;
         }
 
+        if (breathingController != null && !breathingController.IsRunning)
+        {
+            return false;
+        }
+
         return obstaclePrefab != null;
+    }
+
+    private void ResolveBreathingController()
+    {
+        if (breathingController != null)
+        {
+            return;
+        }
+
+        MiniGameFlowController flowController = FindAnyObjectByType<MiniGameFlowController>();
+        if (flowController != null && flowController.Controller != null)
+        {
+            breathingController = flowController.Controller;
+            return;
+        }
+
+        breathingController = FindAnyObjectByType<BreathingController>();
     }
 }
