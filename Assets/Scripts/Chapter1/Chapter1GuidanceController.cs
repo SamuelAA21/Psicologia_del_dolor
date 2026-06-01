@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Yarn.Unity;
 
 public class Chapter1GuidanceController : MonoBehaviour
 {
@@ -10,8 +11,13 @@ public class Chapter1GuidanceController : MonoBehaviour
 
     [Header("HUD")]
     [SerializeField] private Canvas hudCanvas;
+    [SerializeField] private int sortingOrder = 1;
     [SerializeField] private Text objectiveText;
     [SerializeField] private Text distanceText;
+
+    [Header("Comportamiento con dialogos")]
+    [SerializeField] private bool hideDuringDialogue = true;
+    [SerializeField] private DialogueRunner dialogueRunner;
 
     [Header("Marcador en mundo")]
     [SerializeField] private GameObject waypointMarker;
@@ -37,6 +43,7 @@ public class Chapter1GuidanceController : MonoBehaviour
             playerCamera = Camera.main;
         }
 
+        EnsureDialogueRunner();
         EnsureHud();
         EnsureWaypointMarker();
         SetVisible(false);
@@ -44,6 +51,12 @@ public class Chapter1GuidanceController : MonoBehaviour
 
     private void Update()
     {
+        if (hideDuringDialogue && IsDialogueRunning())
+        {
+            SetVisible(false);
+            return;
+        }
+
         if (currentTarget == null)
         {
             SetVisible(false);
@@ -66,7 +79,7 @@ public class Chapter1GuidanceController : MonoBehaviour
         }
 
         UpdateDistanceText();
-        SetVisible(target != null);
+        SetVisible(target != null && (!hideDuringDialogue || !IsDialogueRunning()));
     }
 
     public void ClearObjective()
@@ -80,12 +93,14 @@ public class Chapter1GuidanceController : MonoBehaviour
     {
         if (hudCanvas != null && objectiveText != null)
         {
+            hudCanvas.sortingOrder = sortingOrder;
             return;
         }
 
         GameObject canvasObject = new GameObject("Chapter1_ObjectiveHUD");
         hudCanvas = canvasObject.AddComponent<Canvas>();
         hudCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        hudCanvas.sortingOrder = sortingOrder;
         CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920f, 1080f);
@@ -107,6 +122,20 @@ public class Chapter1GuidanceController : MonoBehaviour
 
         objectiveText = CreateHudText(panel.transform, "ObjectiveText", 18, FontStyle.Bold, new Vector2(18f, -16f), new Vector2(374f, 30f));
         distanceText = CreateHudText(panel.transform, "DistanceText", 14, FontStyle.Normal, new Vector2(18f, -52f), new Vector2(374f, 22f));
+    }
+
+    private void EnsureDialogueRunner()
+    {
+        if (dialogueRunner == null)
+        {
+            dialogueRunner = FindAnyObjectByType<DialogueRunner>(FindObjectsInactive.Include);
+        }
+    }
+
+    private bool IsDialogueRunning()
+    {
+        EnsureDialogueRunner();
+        return dialogueRunner != null && dialogueRunner.IsDialogueRunning;
     }
 
     private static Text CreateHudText(Transform parent, string name, int fontSize, FontStyle fontStyle, Vector2 anchoredPosition, Vector2 size)

@@ -39,6 +39,9 @@ public class Chapter1EnvironmentController : MonoBehaviour
     [Header("Inventario")]
     [SerializeField] private Chapter1InventorySystem inventorySystem;
 
+    [Header("Progreso")]
+    [SerializeField] private Chapter1ProgressManager progressManager;
+
     [Header("Inicializacion automatica")]
     [SerializeField] private bool autoBindSceneObjects = true;
     [SerializeField] private bool autoInitializeOnStart = true;
@@ -64,6 +67,7 @@ public class Chapter1EnvironmentController : MonoBehaviour
         Instance = this;
         EnsureGuidanceController();
         EnsureInventorySystem();
+        EnsureProgressManager();
 
         if (autoBindSceneObjects)
         {
@@ -76,6 +80,11 @@ public class Chapter1EnvironmentController : MonoBehaviour
         if (autoInitializeOnStart && string.IsNullOrWhiteSpace(CurrentStage))
         {
             UnlockStage(string.IsNullOrWhiteSpace(initialStageName) ? DefaultInitialStage : initialStageName);
+        }
+
+        if (progressManager != null)
+        {
+            progressManager.ConsumePendingMiniGameResult();
         }
     }
 
@@ -129,7 +138,12 @@ public class Chapter1EnvironmentController : MonoBehaviour
         }
 
         Instance.EnsureInventorySystem();
-        if (Instance.inventorySystem != null)
+        Instance.EnsureProgressManager();
+        if (Instance.progressManager != null)
+        {
+            Instance.progressManager.MarkCompassObtained();
+        }
+        else if (Instance.inventorySystem != null)
         {
             Instance.inventorySystem.AddCompass();
         }
@@ -175,7 +189,11 @@ public class Chapter1EnvironmentController : MonoBehaviour
             rewardVisual.PlayUnlock();
         }
 
-        if (inventorySystem != null)
+        if (progressManager != null)
+        {
+            progressManager.MarkCompassObtained();
+        }
+        else if (inventorySystem != null)
         {
             inventorySystem.AddCompass();
         }
@@ -275,6 +293,11 @@ public class Chapter1EnvironmentController : MonoBehaviour
         guidanceController = guidance;
         progressMarkers = markers;
         ambientLights = lights;
+
+        if (progressManager != null)
+        {
+            progressManager.Configure(guidanceController, inventorySystem, brujulaDelCompromiso);
+        }
     }
 
     private void HighlightStage(string stageName)
@@ -417,9 +440,15 @@ public class Chapter1EnvironmentController : MonoBehaviour
             resolvedTarget = ResolveCurrentStageTarget();
         }
 
-        if (guidanceController != null)
+        Transform objectiveTarget = resolvedTarget != null ? resolvedTarget.transform : null;
+
+        if (progressManager != null)
         {
-            guidanceController.SetObjective(text, resolvedTarget != null ? resolvedTarget.transform : null);
+            progressManager.SetObjective(text, objectiveTarget);
+        }
+        else if (guidanceController != null)
+        {
+            guidanceController.SetObjective(text, objectiveTarget);
         }
     }
 
@@ -477,6 +506,25 @@ public class Chapter1EnvironmentController : MonoBehaviour
         }
     }
 
+    private void EnsureProgressManager()
+    {
+        if (progressManager == null)
+        {
+            progressManager = GetComponent<Chapter1ProgressManager>();
+            if (progressManager == null)
+            {
+                progressManager = FindAnyObjectByType<Chapter1ProgressManager>(FindObjectsInactive.Include);
+            }
+
+            if (progressManager == null)
+            {
+                progressManager = gameObject.AddComponent<Chapter1ProgressManager>();
+            }
+        }
+
+        progressManager.Configure(guidanceController, inventorySystem, brujulaDelCompromiso);
+    }
+
     private void AutoBindSceneObjects()
     {
         DialogueRunner dialogueRunner = FindAnyObjectByType<DialogueRunner>(FindObjectsInactive.Include);
@@ -516,6 +564,11 @@ public class Chapter1EnvironmentController : MonoBehaviour
         if (brujulaDelCompromiso == null)
         {
             brujulaDelCompromiso = FindSceneObject("BrujulaDelCompromiso", "BrújulaDelCompromiso");
+        }
+
+        if (progressManager != null)
+        {
+            progressManager.Configure(guidanceController, inventorySystem, brujulaDelCompromiso);
         }
 
         puerta1Animation = EnsureDoorAnimation(puerta1Retirada, puerta1Animation);

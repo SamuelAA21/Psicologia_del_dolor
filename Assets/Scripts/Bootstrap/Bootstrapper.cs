@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Bootstrapper : MonoBehaviour
 {
-    [SerializeField] private string firstScene = "SampleScene";
+    [SerializeField] private string firstScene = "Interfaz";
 
     private void Start()
     {

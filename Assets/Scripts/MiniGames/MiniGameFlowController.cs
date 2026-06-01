@@ -26,6 +26,7 @@ public class MiniGameFlowController : MonoBehaviour
 
     private void OnWin()
     {
+        Chapter1ProgressState.ReportBreathingCompleted();
         SceneLoader.LoadSceneSafe(returnSceneName);
     }
 }

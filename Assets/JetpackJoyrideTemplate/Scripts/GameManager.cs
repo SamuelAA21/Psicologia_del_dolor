@@ -29,6 +29,7 @@ public class GameManager : MonoBehaviour
         isGameOver = true;
         Time.timeScale = 1f;
 
+        Chapter1ProgressState.ReportBreathingFailed();
         SceneLoader.LoadSceneSafe(returnSceneName);
     }
 
