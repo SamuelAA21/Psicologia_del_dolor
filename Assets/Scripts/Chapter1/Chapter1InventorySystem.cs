@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using Yarn.Unity;
 
 public class Chapter1InventorySystem : MonoBehaviour
 {
@@ -56,6 +57,7 @@ public class Chapter1InventorySystem : MonoBehaviour
 
     [Header("HUD")]
     [SerializeField] private Canvas inventoryCanvas;
+    [SerializeField] private int sortingOrder = 2;
     [SerializeField] private Vector2 referenceResolution = new Vector2(1920f, 1080f);
     [SerializeField] private Vector2 slotSize = new Vector2(68f, 68f);
     [SerializeField] private float slotSpacing = 8f;
@@ -65,12 +67,17 @@ public class Chapter1InventorySystem : MonoBehaviour
     [SerializeField] private Color borderColor = new Color(0.85f, 0.94f, 1f, 1f);
     [SerializeField] private Text selectedItemLabel;
 
+    [Header("Comportamiento con dialogos")]
+    [SerializeField] private bool hideDuringDialogue = true;
+    [SerializeField] private DialogueRunner dialogueRunner;
+
     private InventorySlot[] slots;
     private Image[] slotBackgrounds;
     private Image[] iconImages;
     private Text[] fallbackIconTexts;
     private Text[] quantityTexts;
     private int selectedSlotIndex;
+    private bool inventoryVisible = true;
 
     public int SelectedSlotIndex => selectedSlotIndex;
     public bool HasCompass => HasItem(compassItemId);
@@ -91,7 +98,9 @@ public class Chapter1InventorySystem : MonoBehaviour
             EnsureHud();
         }
 
+        EnsureDialogueRunner();
         RefreshHud();
+        RefreshDialogueVisibility();
     }
 
     private void OnDestroy()
@@ -104,6 +113,8 @@ public class Chapter1InventorySystem : MonoBehaviour
 
     private void Update()
     {
+        RefreshDialogueVisibility();
+
         if (allowNumberSelection)
         {
             HandleNumberSelection();
@@ -248,7 +259,7 @@ public class Chapter1InventorySystem : MonoBehaviour
         }
 
         inventoryCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        inventoryCanvas.sortingOrder = 20;
+        inventoryCanvas.sortingOrder = sortingOrder;
 
         CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
         if (scaler == null)
@@ -419,6 +430,33 @@ public class Chapter1InventorySystem : MonoBehaviour
         return string.IsNullOrWhiteSpace(slot.displayName)
             ? "?"
             : slot.displayName.Substring(0, 1).ToUpperInvariant();
+    }
+
+    private void EnsureDialogueRunner()
+    {
+        if (dialogueRunner == null)
+        {
+            dialogueRunner = FindAnyObjectByType<DialogueRunner>(FindObjectsInactive.Include);
+        }
+    }
+
+    private void RefreshDialogueVisibility()
+    {
+        if (!hideDuringDialogue || inventoryCanvas == null)
+        {
+            return;
+        }
+
+        EnsureDialogueRunner();
+
+        bool shouldBeVisible = dialogueRunner == null || !dialogueRunner.IsDialogueRunning;
+        if (inventoryVisible == shouldBeVisible)
+        {
+            return;
+        }
+
+        inventoryVisible = shouldBeVisible;
+        inventoryCanvas.gameObject.SetActive(shouldBeVisible);
     }
 
     private void HandleNumberSelection()
