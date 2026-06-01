@@ -1,4 +1,7 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -50,7 +53,20 @@ public class MainMenuController : MonoBehaviour
 
     private void Awake()
     {
+        ForceMenuCursor();
         WireMenu();
+    }
+
+    private void OnEnable()
+    {
+        ForceMenuCursor();
+    }
+
+    private void Update()
+    {
+        ForceMenuCursor();
+        HandleKeyboardFallback();
+        HandleMouseFallback();
     }
 
     private void OnDestroy()
@@ -93,6 +109,7 @@ public class MainMenuController : MonoBehaviour
         }
 
         ConfigureCanvas(canvas);
+        EnsureEventSystem();
 
         playButton = playButton != null ? playButton : FindButton("Play", "Jugar");
         if (playButton == null)
@@ -120,6 +137,58 @@ public class MainMenuController : MonoBehaviour
 
         SetStatus(string.Empty);
         SetButtonsInteractable(true);
+    }
+
+    private void ForceMenuCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+    private void HandleKeyboardFallback()
+    {
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard == null || isLoading)
+        {
+            return;
+        }
+
+        if (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame || keyboard.spaceKey.wasPressedThisFrame)
+        {
+            StartGame();
+        }
+    }
+
+    private void HandleMouseFallback()
+    {
+        Mouse mouse = Mouse.current;
+        if (mouse == null || isLoading || !mouse.leftButton.wasPressedThisFrame)
+        {
+            return;
+        }
+
+        Vector2 pointerPosition = mouse.position.ReadValue();
+        if (IsPointerInsideButton(playButton, pointerPosition))
+        {
+            StartGame();
+            return;
+        }
+
+        if (IsPointerInsideButton(exitButton, pointerPosition))
+        {
+            QuitGame();
+        }
+    }
+
+    private static bool IsPointerInsideButton(Button button, Vector2 pointerPosition)
+    {
+        if (button == null || !button.gameObject.activeInHierarchy || !button.interactable)
+        {
+            return false;
+        }
+
+        RectTransform rect = button.GetComponent<RectTransform>();
+        return rect != null && RectTransformUtility.RectangleContainsScreenPoint(rect, pointerPosition, null);
     }
 
     private static Button FindButton(params string[] names)
@@ -151,6 +220,28 @@ public class MainMenuController : MonoBehaviour
 
         canvasObject.AddComponent<GraphicRaycaster>();
         return canvas;
+    }
+
+    private static void EnsureEventSystem()
+    {
+        EventSystem eventSystem = EventSystem.current;
+        if (eventSystem == null)
+        {
+            eventSystem = FindAnyObjectByType<EventSystem>(FindObjectsInactive.Include);
+        }
+
+        if (eventSystem == null)
+        {
+            GameObject eventSystemObject = new GameObject("EventSystem");
+            eventSystem = eventSystemObject.AddComponent<EventSystem>();
+        }
+
+        eventSystem.gameObject.SetActive(true);
+
+        if (eventSystem.GetComponent<BaseInputModule>() == null)
+        {
+            eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
+        }
     }
 
     private static void ConfigureCanvas(Canvas canvas)
