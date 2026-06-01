@@ -55,6 +55,7 @@ public class MainMenuController : MonoBehaviour
     {
         ForceMenuCursor();
         WireMenu();
+        GameAudioManager.PlayMenuMusic();
     }
 
     private void OnEnable()
@@ -90,6 +91,7 @@ public class MainMenuController : MonoBehaviour
         }
 
         isLoading = true;
+        GameAudioManager.PlayUiClick();
         SetStatus("Cargando...");
         SetButtonsInteractable(false);
         SceneLoader.LoadSceneSafe(gameSceneName);
@@ -97,6 +99,7 @@ public class MainMenuController : MonoBehaviour
 
     public void QuitGame()
     {
+        GameAudioManager.PlayUiClick();
         Application.Quit();
     }
 

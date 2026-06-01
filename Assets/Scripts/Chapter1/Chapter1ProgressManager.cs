@@ -72,6 +72,7 @@ public class Chapter1ProgressManager : MonoBehaviour
             inventorySystem.AddCompass();
         }
 
+        GameAudioManager.PlayReward();
         Notify("Brújula obtenida");
     }
 
@@ -86,11 +87,13 @@ public class Chapter1ProgressManager : MonoBehaviour
         if (result == Chapter1MiniGameResult.Completed)
         {
             breathingCompleted = true;
+            GameAudioManager.PlayReward();
             Notify("Respiración completada");
             SetObjective("Respiración completada. Vuelve a la Brújula del Compromiso.", compassTarget != null ? compassTarget.transform : null);
             return;
         }
 
+        GameAudioManager.PlayError();
         Notify("Respiración interrumpida");
         SetObjective("Respiración interrumpida. Busca la Brújula e inténtalo de nuevo.", compassTarget != null ? compassTarget.transform : null);
     }
