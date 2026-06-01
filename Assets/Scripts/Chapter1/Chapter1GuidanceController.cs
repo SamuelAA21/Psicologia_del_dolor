@@ -15,7 +15,8 @@ public class Chapter1GuidanceController : MonoBehaviour
 
     [Header("Marcador en mundo")]
     [SerializeField] private GameObject waypointMarker;
-    [SerializeField] private float markerHeight = 3.2f;
+    [SerializeField] private float markerHeight = 4.2f;
+    [SerializeField] private float markerScale = 0.8f;
     [SerializeField] private float markerBobAmount = 0.25f;
     [SerializeField] private float markerBobSpeed = 2.2f;
     [SerializeField] private float markerRotateSpeed = 80f;
@@ -85,7 +86,10 @@ public class Chapter1GuidanceController : MonoBehaviour
         GameObject canvasObject = new GameObject("Chapter1_ObjectiveHUD");
         hudCanvas = canvasObject.AddComponent<Canvas>();
         hudCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvasObject.AddComponent<CanvasScaler>();
+        CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.matchWidthOrHeight = 0.5f;
         canvasObject.AddComponent<GraphicRaycaster>();
 
         GameObject panel = new GameObject("ObjectivePanel");
@@ -135,19 +139,28 @@ public class Chapter1GuidanceController : MonoBehaviour
         {
             waypointMarker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             waypointMarker.name = "Chapter1_WaypointMarker";
-            waypointMarker.transform.localScale = Vector3.one * 0.32f;
         }
+
+        waypointMarker.transform.localScale = Vector3.one * markerScale;
 
         markerRenderer = waypointMarker.GetComponent<Renderer>();
         if (markerRenderer != null)
         {
             Material material = new Material(markerRenderer.sharedMaterial);
             Color markerColor = new Color(0.35f, 0.9f, 1f, 1f);
-            material.color = markerColor;
+            if (material.HasProperty("_BaseColor"))
+            {
+                material.SetColor("_BaseColor", markerColor);
+            }
+            else if (material.HasProperty("_Color"))
+            {
+                material.SetColor("_Color", markerColor);
+            }
+
             if (material.HasProperty("_EmissionColor"))
             {
                 material.EnableKeyword("_EMISSION");
-                material.SetColor("_EmissionColor", markerColor * 1.4f);
+                material.SetColor("_EmissionColor", markerColor * 2.2f);
             }
 
             markerRenderer.material = material;
@@ -161,7 +174,8 @@ public class Chapter1GuidanceController : MonoBehaviour
             markerLight = lightObject.AddComponent<Light>();
             markerLight.type = LightType.Point;
             markerLight.color = new Color(0.35f, 0.9f, 1f);
-            markerLight.range = 3f;
+            markerLight.range = 6f;
+            markerLight.intensity = 2.2f;
         }
     }
 
@@ -200,7 +214,7 @@ public class Chapter1GuidanceController : MonoBehaviour
         }
 
         float distance = Vector3.Distance(playerController.transform.position, currentTarget.position);
-        distanceText.text = $"{Mathf.RoundToInt(distance)} m";
+        distanceText.text = $"{Mathf.RoundToInt(distance)} m hasta el objetivo";
     }
 
     private void SetVisible(bool visible)

@@ -6,6 +6,8 @@ public class Chapter1EnvironmentController : MonoBehaviour
 {
     public static Chapter1EnvironmentController Instance { get; private set; }
 
+    private const string DefaultInitialStage = "Puerta1";
+
     [Header("Personajes")]
     [SerializeField] private GameObject avatarClinico;
     [SerializeField] private CharacterAnimationBridge avatarAnimation;
@@ -34,6 +36,14 @@ public class Chapter1EnvironmentController : MonoBehaviour
     [Header("Guia del jugador")]
     [SerializeField] private Chapter1GuidanceController guidanceController;
 
+    [Header("Inventario")]
+    [SerializeField] private Chapter1InventorySystem inventorySystem;
+
+    [Header("Inicializacion automatica")]
+    [SerializeField] private bool autoBindSceneObjects = true;
+    [SerializeField] private bool autoInitializeOnStart = true;
+    [SerializeField] private string initialStageName = DefaultInitialStage;
+
     [Header("Ambiente opcional")]
     [SerializeField] private GameObject[] progressMarkers;
     [SerializeField] private Light[] ambientLights;
@@ -52,14 +62,20 @@ public class Chapter1EnvironmentController : MonoBehaviour
         }
 
         Instance = this;
+        EnsureGuidanceController();
+        EnsureInventorySystem();
 
-        if (guidanceController == null)
+        if (autoBindSceneObjects)
         {
-            guidanceController = GetComponent<Chapter1GuidanceController>();
-            if (guidanceController == null)
-            {
-                guidanceController = gameObject.AddComponent<Chapter1GuidanceController>();
-            }
+            AutoBindSceneObjects();
+        }
+    }
+
+    private void Start()
+    {
+        if (autoInitializeOnStart && string.IsNullOrWhiteSpace(CurrentStage))
+        {
+            UnlockStage(string.IsNullOrWhiteSpace(initialStageName) ? DefaultInitialStage : initialStageName);
         }
     }
 
@@ -104,6 +120,21 @@ public class Chapter1EnvironmentController : MonoBehaviour
         Instance.UnlockStage(stageName);
     }
 
+    [YarnCommand("chapter1_give_compass")]
+    public static void GiveCompassFromYarn()
+    {
+        if (Instance == null)
+        {
+            return;
+        }
+
+        Instance.EnsureInventorySystem();
+        if (Instance.inventorySystem != null)
+        {
+            Instance.inventorySystem.AddCompass();
+        }
+    }
+
     public void SetStage(string stageName)
     {
         if (string.IsNullOrWhiteSpace(stageName))
@@ -144,6 +175,11 @@ public class Chapter1EnvironmentController : MonoBehaviour
             rewardVisual.PlayUnlock();
         }
 
+        if (inventorySystem != null)
+        {
+            inventorySystem.AddCompass();
+        }
+
         SetObjective("Recompensa obtenida: prepárate para respirar.", brujulaDelCompromiso);
     }
 
@@ -153,6 +189,13 @@ public class Chapter1EnvironmentController : MonoBehaviour
         {
             return;
         }
+
+        if (autoBindSceneObjects)
+        {
+            AutoBindSceneObjects();
+        }
+
+        CurrentStage = stageName;
 
         if (stageName.Equals("Puerta1", StringComparison.OrdinalIgnoreCase))
         {
@@ -366,9 +409,336 @@ public class Chapter1EnvironmentController : MonoBehaviour
 
     private void SetObjective(string text, GameObject target)
     {
+        GameObject resolvedTarget = target;
+
+        if (target == null && autoBindSceneObjects)
+        {
+            AutoBindSceneObjects();
+            resolvedTarget = ResolveCurrentStageTarget();
+        }
+
         if (guidanceController != null)
         {
-            guidanceController.SetObjective(text, target != null ? target.transform : null);
+            guidanceController.SetObjective(text, resolvedTarget != null ? resolvedTarget.transform : null);
         }
+    }
+
+    private GameObject ResolveCurrentStageTarget()
+    {
+        if (string.Equals(CurrentStage, "Puerta1", StringComparison.OrdinalIgnoreCase))
+        {
+            return puerta1Retirada;
+        }
+
+        if (string.Equals(CurrentStage, "Puerta2", StringComparison.OrdinalIgnoreCase))
+        {
+            return puerta2Entender;
+        }
+
+        if (string.Equals(CurrentStage, "Puerta3", StringComparison.OrdinalIgnoreCase))
+        {
+            return puerta3Compromiso;
+        }
+
+        if (string.Equals(CurrentStage, "Estacion4", StringComparison.OrdinalIgnoreCase))
+        {
+            return estacion4Preguntas;
+        }
+
+        return brujulaDelCompromiso;
+    }
+
+    private void EnsureGuidanceController()
+    {
+        if (guidanceController == null)
+        {
+            guidanceController = GetComponent<Chapter1GuidanceController>();
+            if (guidanceController == null)
+            {
+                guidanceController = gameObject.AddComponent<Chapter1GuidanceController>();
+            }
+        }
+    }
+
+    private void EnsureInventorySystem()
+    {
+        if (inventorySystem == null)
+        {
+            inventorySystem = GetComponent<Chapter1InventorySystem>();
+            if (inventorySystem == null)
+            {
+                inventorySystem = FindAnyObjectByType<Chapter1InventorySystem>(FindObjectsInactive.Include);
+            }
+
+            if (inventorySystem == null)
+            {
+                inventorySystem = gameObject.AddComponent<Chapter1InventorySystem>();
+            }
+        }
+    }
+
+    private void AutoBindSceneObjects()
+    {
+        DialogueRunner dialogueRunner = FindAnyObjectByType<DialogueRunner>(FindObjectsInactive.Include);
+
+        if (puerta1Retirada == null)
+        {
+            puerta1Retirada = FindSceneObject(
+                "NEGACION (1)",
+                "PUERTA NEGACION (1)",
+                "Puerta1_Retirada",
+                "Puerta 1 Retirada");
+        }
+
+        if (puerta2Entender == null)
+        {
+            puerta2Entender = FindSceneObject(
+                "NEGOCIACION (1)",
+                "PUERTA NEGOCIACION (1)",
+                "Puerta2_Entender",
+                "Puerta 2 Entender");
+        }
+
+        if (puerta3Compromiso == null)
+        {
+            puerta3Compromiso = FindSceneObject(
+                "PUERTA ACEPTACION (1)",
+                "ACEPTACION (1)",
+                "Puerta3_Compromiso",
+                "Puerta 3 Compromiso");
+        }
+
+        if (estacion4Preguntas == null)
+        {
+            estacion4Preguntas = FindSceneObject("Estacion4_Preguntas", "Archivo de preguntas");
+        }
+
+        if (brujulaDelCompromiso == null)
+        {
+            brujulaDelCompromiso = FindSceneObject("BrujulaDelCompromiso", "BrújulaDelCompromiso");
+        }
+
+        puerta1Animation = EnsureDoorAnimation(puerta1Retirada, puerta1Animation);
+        puerta2Animation = EnsureDoorAnimation(puerta2Entender, puerta2Animation);
+        puerta3Animation = EnsureDoorAnimation(puerta3Compromiso, puerta3Animation);
+
+        puerta1Interactable = EnsureNarrativeInteractable(
+            puerta1Retirada,
+            puerta1Interactable,
+            "Puerta1",
+            "E  Abrir",
+            "Bloqueada",
+            dialogueRunner,
+            puerta1Animation);
+
+        puerta2Interactable = EnsureNarrativeInteractable(
+            puerta2Entender,
+            puerta2Interactable,
+            "Puerta2",
+            "E  Abrir",
+            "Bloqueada",
+            dialogueRunner,
+            puerta2Animation);
+
+        puerta3Interactable = EnsureNarrativeInteractable(
+            puerta3Compromiso,
+            puerta3Interactable,
+            "Puerta3",
+            "E  Abrir",
+            "Bloqueada",
+            dialogueRunner,
+            puerta3Animation);
+
+        estacion4Interactable = EnsureNarrativeInteractable(
+            estacion4Preguntas,
+            estacion4Interactable,
+            "Estacion4",
+            "E  Responder",
+            "Completa las puertas",
+            dialogueRunner,
+            null);
+    }
+
+    private static GameObject FindSceneObject(params string[] names)
+    {
+        Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        foreach (string objectName in names)
+        {
+            if (string.IsNullOrWhiteSpace(objectName))
+            {
+                continue;
+            }
+
+            foreach (Transform candidate in transforms)
+            {
+                if (candidate != null && candidate.name.Equals(objectName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return candidate.gameObject;
+                }
+            }
+        }
+
+        foreach (string objectName in names)
+        {
+            if (string.IsNullOrWhiteSpace(objectName))
+            {
+                continue;
+            }
+
+            string normalizedName = NormalizeName(objectName);
+            foreach (Transform candidate in transforms)
+            {
+                if (candidate == null)
+                {
+                    continue;
+                }
+
+                string normalizedCandidate = NormalizeName(candidate.name);
+                if (normalizedCandidate.Contains(normalizedName) || normalizedName.Contains(normalizedCandidate))
+                {
+                    return candidate.gameObject;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static string NormalizeName(string value)
+    {
+        return value
+            .Replace(" ", string.Empty)
+            .Replace("_", string.Empty)
+            .Replace("-", string.Empty)
+            .Replace("(", string.Empty)
+            .Replace(")", string.Empty)
+            .ToUpperInvariant();
+    }
+
+    private static DoorAnimationBridge EnsureDoorAnimation(GameObject target, DoorAnimationBridge existing)
+    {
+        if (existing != null || target == null)
+        {
+            return existing;
+        }
+
+        DoorAnimationBridge animationBridge = target.GetComponent<DoorAnimationBridge>();
+        if (animationBridge == null)
+        {
+            animationBridge = target.AddComponent<DoorAnimationBridge>();
+        }
+
+        return animationBridge;
+    }
+
+    private static NarrativeInteractable EnsureNarrativeInteractable(
+        GameObject target,
+        NarrativeInteractable existing,
+        string yarnNodeName,
+        string promptText,
+        string lockedPromptText,
+        DialogueRunner dialogueRunner,
+        DoorAnimationBridge doorAnimation)
+    {
+        if (target == null)
+        {
+            return existing;
+        }
+
+        NarrativeInteractable interactable = existing != null && existing.transform.IsChildOf(target.transform)
+            ? existing
+            : target.GetComponentInChildren<NarrativeInteractable>(true);
+
+        if (interactable == null)
+        {
+            GameObject triggerObject = new GameObject("Chapter1_InteractionTrigger");
+            triggerObject.transform.SetParent(target.transform, false);
+            triggerObject.transform.localRotation = Quaternion.identity;
+            triggerObject.transform.localScale = Vector3.one;
+
+            BoxCollider collider = triggerObject.AddComponent<BoxCollider>();
+            ConfigureTriggerCollider(collider, target);
+
+            interactable = triggerObject.AddComponent<NarrativeInteractable>();
+        }
+
+        interactable.SetYarnNodeName(yarnNodeName);
+        interactable.SetDialogueRunner(dialogueRunner);
+        interactable.SetPlayerTag(string.Empty);
+        interactable.SetDoorAnimationBridge(doorAnimation);
+        interactable.SetPromptObject(EnsurePrompt(target.transform, "Chapter1_Prompt", promptText, new Color(0.65f, 0.95f, 1f)));
+        interactable.SetLockedPromptObject(EnsurePrompt(target.transform, "Chapter1_LockedPrompt", lockedPromptText, new Color(1f, 0.55f, 0.45f)));
+
+        return interactable;
+    }
+
+    private static void ConfigureTriggerCollider(BoxCollider collider, GameObject target)
+    {
+        Bounds bounds = GetWorldBounds(target);
+        Vector3 localCenter = target.transform.InverseTransformPoint(bounds.center);
+        Vector3 localSize = new Vector3(
+            SafeDivide(bounds.size.x + 1.5f, target.transform.lossyScale.x),
+            SafeDivide(Mathf.Max(bounds.size.y, 2.5f) + 1f, target.transform.lossyScale.y),
+            SafeDivide(bounds.size.z + 2f, target.transform.lossyScale.z));
+
+        collider.center = localCenter;
+        collider.size = new Vector3(
+            Mathf.Max(localSize.x, 2.5f),
+            Mathf.Max(localSize.y, 3f),
+            Mathf.Max(localSize.z, 2.5f));
+        collider.isTrigger = true;
+    }
+
+    private static Bounds GetWorldBounds(GameObject target)
+    {
+        Renderer[] renderers = target.GetComponentsInChildren<Renderer>(true);
+        if (renderers.Length == 0)
+        {
+            return new Bounds(target.transform.position, new Vector3(2f, 3f, 1f));
+        }
+
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+        {
+            bounds.Encapsulate(renderers[i].bounds);
+        }
+
+        return bounds;
+    }
+
+    private static float SafeDivide(float value, float divisor)
+    {
+        return Mathf.Abs(divisor) <= 0.001f ? value : value / Mathf.Abs(divisor);
+    }
+
+    private static GameObject EnsurePrompt(Transform parent, string name, string text, Color color)
+    {
+        Transform existing = parent.Find(name);
+        GameObject promptObject = existing != null ? existing.gameObject : new GameObject(name);
+        promptObject.transform.SetParent(parent, false);
+        promptObject.transform.localPosition = Vector3.up * 2.4f;
+        promptObject.transform.localRotation = Quaternion.identity;
+
+        TextMesh textMesh = promptObject.GetComponent<TextMesh>();
+        if (textMesh == null)
+        {
+            textMesh = promptObject.AddComponent<TextMesh>();
+        }
+
+        textMesh.text = text;
+        textMesh.anchor = TextAnchor.MiddleCenter;
+        textMesh.alignment = TextAlignment.Center;
+        textMesh.characterSize = 0.12f;
+        textMesh.fontSize = 48;
+        textMesh.color = color;
+
+        if (promptObject.GetComponent<Chapter1Billboard>() == null)
+        {
+            promptObject.AddComponent<Chapter1Billboard>();
+        }
+
+        promptObject.SetActive(false);
+        return promptObject;
     }
 }
