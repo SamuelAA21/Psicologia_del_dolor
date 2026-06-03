@@ -6,9 +6,6 @@ using Yarn.Unity;
 
 public class ContextualTutorialController : MonoBehaviour
 {
-    private const string MenuSceneName = "Interfaz";
-    private const string BootstrapSceneName = "Bootstrap";
-    private const string GameplaySceneName = "SampleScene";
     private const string TutorialShownKey = "Chapter1_ContextualTutorial_Shown";
 
     [SerializeField] private bool showOnlyOnce = true;
@@ -31,6 +28,7 @@ public class ContextualTutorialController : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
     {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
         SceneManager.sceneLoaded += HandleSceneLoaded;
         EnsureForScene(SceneManager.GetActiveScene());
     }
@@ -58,9 +56,7 @@ public class ContextualTutorialController : MonoBehaviour
 
     private static bool IsGameplayScene(string sceneName)
     {
-        return sceneName.Equals(GameplaySceneName, System.StringComparison.OrdinalIgnoreCase)
-            && !sceneName.Equals(MenuSceneName, System.StringComparison.OrdinalIgnoreCase)
-            && !sceneName.Equals(BootstrapSceneName, System.StringComparison.OrdinalIgnoreCase);
+        return GameSceneNames.IsMainGame(sceneName);
     }
 
     private void Awake()
@@ -175,7 +171,7 @@ public class ContextualTutorialController : MonoBehaviour
         GameObject textObject = new GameObject("HintText");
         textObject.transform.SetParent(panel.transform, false);
         hintText = textObject.AddComponent<Text>();
-        hintText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        hintText.font = RuntimeUiUtility.DefaultFont;
         hintText.fontSize = 19;
         hintText.fontStyle = FontStyle.Bold;
         hintText.alignment = TextAnchor.MiddleLeft;

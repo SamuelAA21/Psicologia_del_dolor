@@ -3,7 +3,7 @@ using UnityEngine;
 public class MiniGameFlowController : MonoBehaviour
 {
     [SerializeField] private BreathingController controller;
-    [SerializeField] private string returnSceneName = "SampleScene";
+    [SerializeField] private string returnSceneName = GameSceneNames.MainGame;
 
     private bool completed;
 

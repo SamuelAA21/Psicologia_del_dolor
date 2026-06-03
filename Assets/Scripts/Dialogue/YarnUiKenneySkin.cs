@@ -6,7 +6,6 @@ using UnityEngine.UI;
 
 public static class YarnUiKenneySkin
 {
-    private const string TargetSceneName = "SampleScene";
     private static readonly Dictionary<string, Sprite> SpriteCache = new Dictionary<string, Sprite>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -18,7 +17,7 @@ public static class YarnUiKenneySkin
 
     private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name != TargetSceneName)
+        if (!GameSceneNames.IsMainGame(scene.name))
         {
             return;
         }

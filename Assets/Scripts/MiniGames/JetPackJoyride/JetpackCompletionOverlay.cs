@@ -1,14 +1,10 @@
 using System;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class JetpackCompletionOverlay : MonoBehaviour
 {
-    private const string TargetSceneName = "FirstMiniGame";
-
     [SerializeField] private string prefabResourcePath = "UI/JetpackCompletionOverlay";
 
     private Canvas completionCanvas;
@@ -37,7 +33,7 @@ public class JetpackCompletionOverlay : MonoBehaviour
 
     private static void InstallForScene(Scene scene)
     {
-        if (scene.name != TargetSceneName || FindAnyObjectByType<JetpackCompletionOverlay>() != null)
+        if (!GameSceneNames.IsBreathingMiniGame(scene.name) || FindAnyObjectByType<JetpackCompletionOverlay>() != null)
         {
             return;
         }
@@ -85,7 +81,7 @@ public class JetpackCompletionOverlay : MonoBehaviour
         Time.timeScale = 0f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-        EnsureEventSystem();
+        RuntimeUiUtility.EnsureEventSystem();
 
         if (completionCanvas != null)
         {
@@ -131,21 +127,14 @@ public class JetpackCompletionOverlay : MonoBehaviour
         completionCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
         completionCanvas.sortingOrder = 1210;
 
-        CanvasScaler scaler = gameObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = 0.5f;
+        RuntimeUiUtility.EnsureCanvasScaler(gameObject, new Vector2(1920f, 1080f));
 
-        gameObject.AddComponent<GraphicRaycaster>();
+        RuntimeUiUtility.EnsureGraphicRaycaster(gameObject);
 
-        Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        if (font == null)
-        {
-            font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        }
+        Font font = RuntimeUiUtility.DefaultFont;
 
         Image shade = CreateImage("CompletionShade", transform, new Color(0f, 0.05f, 0.08f, 0.62f));
-        Stretch(shade.rectTransform);
+        RuntimeUiUtility.Stretch(shade.rectTransform);
 
         Image panel = CreateImage("CompletionPanel", transform, new Color(0.02f, 0.05f, 0.07f, 0.9f));
         RectTransform panelRect = panel.rectTransform;
@@ -157,23 +146,23 @@ public class JetpackCompletionOverlay : MonoBehaviour
 
         Text title = CreateText("Title", panelRect, font, 34, FontStyle.Bold, TextAnchor.MiddleCenter, Color.white);
         title.text = "PRACTICA COMPLETADA";
-        SetRect(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -34f), new Vector2(620f, 48f));
+        RuntimeUiUtility.SetRect(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -34f), new Vector2(620f, 48f));
 
         summaryText = CreateText("Summary", panelRect, font, 20, FontStyle.Normal, TextAnchor.UpperLeft, new Color(0.92f, 0.98f, 1f));
-        SetRect(summaryText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -100f), new Vector2(600f, 135f));
+        RuntimeUiUtility.SetRect(summaryText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -100f), new Vector2(600f, 135f));
 
         rewardsText = CreateText("Rewards", panelRect, font, 19, FontStyle.Bold, TextAnchor.UpperLeft, new Color(1f, 0.86f, 0.52f));
-        SetRect(rewardsText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -245f), new Vector2(600f, 100f));
+        RuntimeUiUtility.SetRect(rewardsText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -245f), new Vector2(600f, 100f));
 
         Image buttonImage = CreateImage("ContinueButton", panelRect, new Color(0.05f, 0.62f, 0.72f, 0.96f));
-        SetRect(buttonImage.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 38f), new Vector2(270f, 58f));
+        RuntimeUiUtility.SetRect(buttonImage.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 38f), new Vector2(270f, 58f));
         continueButton = buttonImage.gameObject.AddComponent<Button>();
         continueButton.targetGraphic = buttonImage;
         continueButton.onClick.AddListener(Continue);
 
         Text label = CreateText("Label", buttonImage.transform, font, 23, FontStyle.Bold, TextAnchor.MiddleCenter, Color.white);
         label.text = "CONTINUAR";
-        Stretch(label.rectTransform);
+        RuntimeUiUtility.Stretch(label.rectTransform);
     }
 
     private bool TryBuildFromPrefab()
@@ -193,9 +182,9 @@ public class JetpackCompletionOverlay : MonoBehaviour
         instance.name = prefab.name;
 
         completionCanvas = instance.GetComponentInChildren<Canvas>(true);
-        continueButton = FindChildComponent<Button>(instance.transform, "ContinueButton");
-        summaryText = FindChildComponent<Text>(instance.transform, "Summary");
-        rewardsText = FindChildComponent<Text>(instance.transform, "Rewards");
+        continueButton = RuntimeUiUtility.FindChildComponent<Button>(instance.transform, "ContinueButton");
+        summaryText = RuntimeUiUtility.FindChildComponent<Text>(instance.transform, "Summary");
+        rewardsText = RuntimeUiUtility.FindChildComponent<Text>(instance.transform, "Rewards");
 
         if (completionCanvas == null || continueButton == null || summaryText == null || rewardsText == null)
         {
@@ -236,55 +225,4 @@ public class JetpackCompletionOverlay : MonoBehaviour
         return text;
     }
 
-    private static T FindChildComponent<T>(Transform root, string objectName) where T : Component
-    {
-        foreach (T component in root.GetComponentsInChildren<T>(true))
-        {
-            if (component.name == objectName)
-            {
-                return component;
-            }
-        }
-
-        return null;
-    }
-
-    private static void Stretch(RectTransform rect)
-    {
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
-    }
-
-    private static void SetRect(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot, Vector2 position, Vector2 size)
-    {
-        rect.anchorMin = anchorMin;
-        rect.anchorMax = anchorMax;
-        rect.pivot = pivot;
-        rect.anchoredPosition = position;
-        rect.sizeDelta = size;
-    }
-
-    private static void EnsureEventSystem()
-    {
-        EventSystem eventSystem = EventSystem.current;
-        if (eventSystem == null)
-        {
-            eventSystem = FindAnyObjectByType<EventSystem>(FindObjectsInactive.Include);
-        }
-
-        if (eventSystem == null)
-        {
-            GameObject eventSystemObject = new GameObject("EventSystem");
-            eventSystem = eventSystemObject.AddComponent<EventSystem>();
-        }
-
-        eventSystem.gameObject.SetActive(true);
-
-        if (eventSystem.GetComponent<BaseInputModule>() == null)
-        {
-            eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
-        }
-    }
 }

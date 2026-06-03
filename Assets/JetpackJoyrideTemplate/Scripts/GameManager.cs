@@ -4,7 +4,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     [SerializeField] private bool isGameOver;
-    [SerializeField] private string returnSceneName = "SampleScene";
+    [SerializeField] private string returnSceneName = GameSceneNames.MainGame;
     [SerializeField, Min(1)] private int maxMistakes = 3;
 
     private int mistakes;

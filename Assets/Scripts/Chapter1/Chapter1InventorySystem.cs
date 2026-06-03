@@ -377,7 +377,7 @@ public class Chapter1InventorySystem : MonoBehaviour
         textObject.transform.SetParent(parent, false);
 
         Text text = textObject.AddComponent<Text>();
-        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.font = RuntimeUiUtility.DefaultFont;
         text.fontSize = fontSize;
         text.fontStyle = fontStyle;
         text.alignment = alignment;

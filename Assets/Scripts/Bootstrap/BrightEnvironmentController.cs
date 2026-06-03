@@ -3,8 +3,6 @@ using UnityEngine.SceneManagement;
 
 public class BrightEnvironmentController : MonoBehaviour
 {
-    private const string TargetSceneName = "SampleScene";
-
     [SerializeField] private Color ambientSky = new Color(0.72f, 0.87f, 1f, 1f);
     [SerializeField] private Color ambientEquator = new Color(0.58f, 0.74f, 0.82f, 1f);
     [SerializeField] private Color ambientGround = new Color(0.36f, 0.44f, 0.34f, 1f);
@@ -18,6 +16,7 @@ public class BrightEnvironmentController : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
     {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
         SceneManager.sceneLoaded += HandleSceneLoaded;
         EnsureForScene(SceneManager.GetActiveScene());
     }
@@ -29,7 +28,7 @@ public class BrightEnvironmentController : MonoBehaviour
 
     private static void EnsureForScene(Scene scene)
     {
-        if (!scene.name.Equals(TargetSceneName, System.StringComparison.OrdinalIgnoreCase))
+        if (!GameSceneNames.IsMainGame(scene.name))
         {
             return;
         }

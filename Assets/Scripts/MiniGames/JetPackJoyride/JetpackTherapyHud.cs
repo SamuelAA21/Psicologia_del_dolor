@@ -4,8 +4,6 @@ using UnityEngine.UI;
 
 public class JetpackTherapyHud : MonoBehaviour
 {
-    private const string TargetSceneName = "FirstMiniGame";
-
     [SerializeField] private BreathingController breathingController;
     [SerializeField] private BreathingTherapyGuide therapyGuide;
     [SerializeField] private string prefabResourcePath = "UI/JetpackTherapyHud";
@@ -37,7 +35,7 @@ public class JetpackTherapyHud : MonoBehaviour
 
     private static void InstallForScene(Scene scene)
     {
-        if (scene.name != TargetSceneName || FindAnyObjectByType<JetpackTherapyHud>() != null)
+        if (!GameSceneNames.IsBreathingMiniGame(scene.name) || FindAnyObjectByType<JetpackTherapyHud>() != null)
         {
             return;
         }
@@ -93,15 +91,12 @@ public class JetpackTherapyHud : MonoBehaviour
     {
         if (breathingController == null)
         {
-            MiniGameFlowController flowController = FindAnyObjectByType<MiniGameFlowController>();
-            breathingController = flowController != null && flowController.Controller != null
-                ? flowController.Controller
-                : FindAnyObjectByType<BreathingController>();
+            breathingController = MiniGameRuntimeUtility.ResolveBreathingController();
         }
 
         if (therapyGuide == null)
         {
-            therapyGuide = FindAnyObjectByType<BreathingTherapyGuide>();
+            therapyGuide = MiniGameRuntimeUtility.ResolveTherapyGuide();
         }
     }
 
@@ -115,14 +110,10 @@ public class JetpackTherapyHud : MonoBehaviour
         Canvas canvas = gameObject.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 50;
-        gameObject.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        gameObject.AddComponent<GraphicRaycaster>();
+        RuntimeUiUtility.EnsureCanvasScaler(gameObject, new Vector2(1920f, 1080f));
+        RuntimeUiUtility.EnsureGraphicRaycaster(gameObject);
 
-        Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        if (font == null)
-        {
-            font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        }
+        Font font = RuntimeUiUtility.DefaultFont;
 
         Image panel = CreateImage("Panel", transform, new Color(0.03f, 0.05f, 0.07f, 0.48f));
         RectTransform panelRect = panel.rectTransform;
@@ -160,11 +151,7 @@ public class JetpackTherapyHud : MonoBehaviour
         phaseFill.type = Image.Type.Filled;
         phaseFill.fillMethod = Image.FillMethod.Horizontal;
         phaseFill.fillOrigin = 0;
-        RectTransform fillRect = phaseFill.rectTransform;
-        fillRect.anchorMin = Vector2.zero;
-        fillRect.anchorMax = Vector2.one;
-        fillRect.offsetMin = Vector2.zero;
-        fillRect.offsetMax = Vector2.zero;
+        RuntimeUiUtility.Stretch(phaseFill.rectTransform);
 
         cycleText = CreateText("Cycle", panelRect, font, 14, FontStyle.Bold, TextAnchor.MiddleRight, Color.white);
         RectTransform cycleRect = cycleText.rectTransform;
@@ -223,14 +210,14 @@ public class JetpackTherapyHud : MonoBehaviour
         GameObject instance = Instantiate(prefab, transform, false);
         instance.name = prefab.name;
 
-        phaseText = FindChildComponent<Text>(instance.transform, "Phase");
-        instructionText = FindChildComponent<Text>(instance.transform, "Instruction");
-        cycleText = FindChildComponent<Text>(instance.transform, "Cycle");
-        scoreText = FindChildComponent<Text>(instance.transform, "Score");
-        statusText = FindChildComponent<Text>(instance.transform, "Status");
-        livesText = FindChildComponent<Text>(instance.transform, "Lives");
-        phaseFill = FindChildComponent<Image>(instance.transform, "PhaseProgressFill");
-        statusDot = FindChildComponent<Image>(instance.transform, "StatusDot");
+        phaseText = RuntimeUiUtility.FindChildComponent<Text>(instance.transform, "Phase");
+        instructionText = RuntimeUiUtility.FindChildComponent<Text>(instance.transform, "Instruction");
+        cycleText = RuntimeUiUtility.FindChildComponent<Text>(instance.transform, "Cycle");
+        scoreText = RuntimeUiUtility.FindChildComponent<Text>(instance.transform, "Score");
+        statusText = RuntimeUiUtility.FindChildComponent<Text>(instance.transform, "Status");
+        livesText = RuntimeUiUtility.FindChildComponent<Text>(instance.transform, "Lives");
+        phaseFill = RuntimeUiUtility.FindChildComponent<Image>(instance.transform, "PhaseProgressFill");
+        statusDot = RuntimeUiUtility.FindChildComponent<Image>(instance.transform, "StatusDot");
 
         if (HasRequiredUiReferences())
         {
@@ -288,19 +275,6 @@ public class JetpackTherapyHud : MonoBehaviour
         text.horizontalOverflow = HorizontalWrapMode.Wrap;
         text.verticalOverflow = VerticalWrapMode.Truncate;
         return text;
-    }
-
-    private static T FindChildComponent<T>(Transform root, string objectName) where T : Component
-    {
-        foreach (T component in root.GetComponentsInChildren<T>(true))
-        {
-            if (component.name == objectName)
-            {
-                return component;
-            }
-        }
-
-        return null;
     }
 
     private static string GetPhaseLabel(BreathPhase phase)

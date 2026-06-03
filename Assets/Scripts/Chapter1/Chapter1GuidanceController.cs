@@ -144,7 +144,7 @@ public class Chapter1GuidanceController : MonoBehaviour
         textObject.transform.SetParent(parent, false);
 
         Text text = textObject.AddComponent<Text>();
-        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.font = RuntimeUiUtility.DefaultFont;
         text.fontSize = fontSize;
         text.fontStyle = fontStyle;
         text.color = Color.white;

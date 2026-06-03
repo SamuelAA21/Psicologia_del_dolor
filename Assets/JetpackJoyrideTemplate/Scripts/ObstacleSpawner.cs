@@ -201,14 +201,7 @@ public class ObstacleSpawner : MonoBehaviour
             return;
         }
 
-        MiniGameFlowController flowController = FindAnyObjectByType<MiniGameFlowController>();
-        if (flowController != null && flowController.Controller != null)
-        {
-            breathingController = flowController.Controller;
-            return;
-        }
-
-        breathingController = FindAnyObjectByType<BreathingController>();
+        breathingController = MiniGameRuntimeUtility.ResolveBreathingController();
     }
 
     private void ResolvePlayerTransform()
@@ -218,11 +211,7 @@ public class ObstacleSpawner : MonoBehaviour
             return;
         }
 
-        PlayerJetpack player = FindAnyObjectByType<PlayerJetpack>();
-        if (player != null)
-        {
-            playerTransform = player.transform;
-        }
+        playerTransform = MiniGameRuntimeUtility.ResolvePlayerTransform();
     }
 
     private float GetTherapeuticLookAheadSeconds()

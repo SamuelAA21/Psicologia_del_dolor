@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class Bootstrapper : MonoBehaviour
 {
-    [SerializeField] private string firstScene = "Interfaz";
+    [SerializeField] private string firstScene = GameSceneNames.MainMenu;
 
     private void Start()
     {

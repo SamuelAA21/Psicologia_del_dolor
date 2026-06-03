@@ -57,19 +57,12 @@ public class BreathingTherapyGuide : MonoBehaviour
     {
         if (breathingController == null)
         {
-            MiniGameFlowController flowController = FindAnyObjectByType<MiniGameFlowController>();
-            breathingController = flowController != null && flowController.Controller != null
-                ? flowController.Controller
-                : FindAnyObjectByType<BreathingController>();
+            breathingController = MiniGameRuntimeUtility.ResolveBreathingController();
         }
 
         if (playerTransform == null)
         {
-            PlayerJetpack player = FindAnyObjectByType<PlayerJetpack>();
-            if (player != null)
-            {
-                playerTransform = player.transform;
-            }
+            playerTransform = MiniGameRuntimeUtility.ResolvePlayerTransform();
         }
     }
 }

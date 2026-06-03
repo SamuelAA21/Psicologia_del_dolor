@@ -3,8 +3,6 @@ using UnityEngine.SceneManagement;
 
 public class BreathingTargetZoneVisualizer : MonoBehaviour
 {
-    private const string TargetSceneName = "FirstMiniGame";
-
     [SerializeField] private BreathingController breathingController;
     [SerializeField] private BreathingTherapyGuide therapyGuide;
     [SerializeField] private Camera targetCamera;
@@ -30,7 +28,7 @@ public class BreathingTargetZoneVisualizer : MonoBehaviour
 
     private static void InstallForScene(Scene scene)
     {
-        if (scene.name != TargetSceneName || FindAnyObjectByType<BreathingTargetZoneVisualizer>() != null)
+        if (!GameSceneNames.IsBreathingMiniGame(scene.name) || FindAnyObjectByType<BreathingTargetZoneVisualizer>() != null)
         {
             return;
         }
@@ -80,15 +78,12 @@ public class BreathingTargetZoneVisualizer : MonoBehaviour
     {
         if (breathingController == null)
         {
-            MiniGameFlowController flowController = FindAnyObjectByType<MiniGameFlowController>();
-            breathingController = flowController != null && flowController.Controller != null
-                ? flowController.Controller
-                : FindAnyObjectByType<BreathingController>();
+            breathingController = MiniGameRuntimeUtility.ResolveBreathingController();
         }
 
         if (therapyGuide == null)
         {
-            therapyGuide = FindAnyObjectByType<BreathingTherapyGuide>();
+            therapyGuide = MiniGameRuntimeUtility.ResolveTherapyGuide();
         }
 
         if (targetCamera == null)

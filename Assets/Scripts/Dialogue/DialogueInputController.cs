@@ -7,8 +7,6 @@ using Yarn.Unity;
 
 public class DialogueInputController : MonoBehaviour
 {
-    private const string TargetSceneName = "SampleScene";
-
     [SerializeField] private DialogueRunner dialogueRunner;
     [SerializeField] private Button continueButton;
     [SerializeField] private Transform optionsPresenter;
@@ -16,6 +14,7 @@ public class DialogueInputController : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
     {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
         SceneManager.sceneLoaded += HandleSceneLoaded;
         EnsureForScene(SceneManager.GetActiveScene());
     }
@@ -27,7 +26,7 @@ public class DialogueInputController : MonoBehaviour
 
     private static void EnsureForScene(Scene scene)
     {
-        if (!scene.name.Equals(TargetSceneName, System.StringComparison.OrdinalIgnoreCase))
+        if (!GameSceneNames.IsMainGame(scene.name))
         {
             return;
         }

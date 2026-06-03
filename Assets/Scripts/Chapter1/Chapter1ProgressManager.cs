@@ -199,7 +199,7 @@ public class Chapter1ProgressManager : MonoBehaviour
         GameObject textObject = new GameObject("NotificationText");
         textObject.transform.SetParent(panel.transform, false);
         notificationText = textObject.AddComponent<Text>();
-        notificationText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        notificationText.font = RuntimeUiUtility.DefaultFont;
         notificationText.fontSize = 20;
         notificationText.fontStyle = FontStyle.Bold;
         notificationText.alignment = TextAnchor.MiddleCenter;

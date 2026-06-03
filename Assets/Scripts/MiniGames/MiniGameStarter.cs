@@ -3,8 +3,6 @@ using UnityEngine.SceneManagement;
 
 public class MiniGameStarter : MonoBehaviour
 {
-    private const string TargetSceneName = "FirstMiniGame";
-
     [SerializeField] private BreathingController controller;
     [SerializeField] private bool startOnlyInMiniGameScene = true;
     [SerializeField] private bool startOnlyWhenStopped = true;
@@ -12,14 +10,14 @@ public class MiniGameStarter : MonoBehaviour
     private void Start()
     {
         if (startOnlyInMiniGameScene
-            && !SceneManager.GetActiveScene().name.Equals(TargetSceneName, System.StringComparison.OrdinalIgnoreCase))
+            && !GameSceneNames.IsBreathingMiniGame(SceneManager.GetActiveScene().name))
         {
             return;
         }
 
         if (controller == null)
         {
-            controller = FindAnyObjectByType<BreathingController>();
+            controller = MiniGameRuntimeUtility.ResolveBreathingController();
         }
 
         if (controller == null)

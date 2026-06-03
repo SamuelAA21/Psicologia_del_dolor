@@ -1,13 +1,9 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class JetpackPreGameOverlay : MonoBehaviour
 {
-    private const string TargetSceneName = "FirstMiniGame";
-
     [SerializeField] private BreathingController breathingController;
     [SerializeField] private string prefabResourcePath = "UI/JetpackPreGameOverlay";
 
@@ -32,7 +28,7 @@ public class JetpackPreGameOverlay : MonoBehaviour
 
     private static void InstallForScene(Scene scene)
     {
-        if (scene.name != TargetSceneName || FindAnyObjectByType<JetpackPreGameOverlay>() != null)
+        if (!GameSceneNames.IsBreathingMiniGame(scene.name) || FindAnyObjectByType<JetpackPreGameOverlay>() != null)
         {
             return;
         }
@@ -65,7 +61,7 @@ public class JetpackPreGameOverlay : MonoBehaviour
             overlayCanvas.gameObject.SetActive(true);
         }
 
-        EnsureEventSystem();
+        RuntimeUiUtility.EnsureEventSystem();
     }
 
     private void Play()
@@ -114,10 +110,7 @@ public class JetpackPreGameOverlay : MonoBehaviour
             return;
         }
 
-        MiniGameFlowController flowController = FindAnyObjectByType<MiniGameFlowController>();
-        breathingController = flowController != null && flowController.Controller != null
-            ? flowController.Controller
-            : FindAnyObjectByType<BreathingController>();
+        breathingController = MiniGameRuntimeUtility.ResolveBreathingController();
     }
 
     private void BuildUi()
@@ -131,32 +124,17 @@ public class JetpackPreGameOverlay : MonoBehaviour
         overlayCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
         overlayCanvas.sortingOrder = 1200;
 
-        CanvasScaler scaler = gameObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = 0.5f;
+        RuntimeUiUtility.EnsureCanvasScaler(gameObject, new Vector2(1920f, 1080f));
 
-        gameObject.AddComponent<GraphicRaycaster>();
+        RuntimeUiUtility.EnsureGraphicRaycaster(gameObject);
 
-        Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        if (font == null)
-        {
-            font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        }
+        Font font = RuntimeUiUtility.DefaultFont;
 
         Image dimmer = CreateImage("SoftBlurOverlay", transform, new Color(0.64f, 0.83f, 0.9f, 0.38f));
-        RectTransform dimmerRect = dimmer.rectTransform;
-        dimmerRect.anchorMin = Vector2.zero;
-        dimmerRect.anchorMax = Vector2.one;
-        dimmerRect.offsetMin = Vector2.zero;
-        dimmerRect.offsetMax = Vector2.zero;
+        RuntimeUiUtility.Stretch(dimmer.rectTransform);
 
         Image shade = CreateImage("DepthShade", transform, new Color(0f, 0.05f, 0.08f, 0.42f));
-        RectTransform shadeRect = shade.rectTransform;
-        shadeRect.anchorMin = Vector2.zero;
-        shadeRect.anchorMax = Vector2.one;
-        shadeRect.offsetMin = Vector2.zero;
-        shadeRect.offsetMax = Vector2.zero;
+        RuntimeUiUtility.Stretch(shade.rectTransform);
 
         Image panel = CreateImage("InstructionPanel", transform, new Color(0.02f, 0.05f, 0.07f, 0.82f));
         RectTransform panelRect = panel.rectTransform;
@@ -209,7 +187,7 @@ public class JetpackPreGameOverlay : MonoBehaviour
         instance.name = prefab.name;
 
         overlayCanvas = instance.GetComponentInChildren<Canvas>(true);
-        playButton = FindChildComponent<Button>(instance.transform, "PlayButton");
+        playButton = RuntimeUiUtility.FindChildComponent<Button>(instance.transform, "PlayButton");
 
         if (overlayCanvas == null || playButton == null)
         {
@@ -238,11 +216,7 @@ public class JetpackPreGameOverlay : MonoBehaviour
         button.targetGraphic = image;
 
         Text label = CreateText("Label", rect, font, 25, FontStyle.Bold, TextAnchor.MiddleCenter, Color.white);
-        RectTransform labelRect = label.rectTransform;
-        labelRect.anchorMin = Vector2.zero;
-        labelRect.anchorMax = Vector2.one;
-        labelRect.offsetMin = Vector2.zero;
-        labelRect.offsetMax = Vector2.zero;
+        RuntimeUiUtility.Stretch(label.rectTransform);
         label.text = "PLAY";
 
         return button;
@@ -272,38 +246,4 @@ public class JetpackPreGameOverlay : MonoBehaviour
         return text;
     }
 
-    private static T FindChildComponent<T>(Transform root, string objectName) where T : Component
-    {
-        foreach (T component in root.GetComponentsInChildren<T>(true))
-        {
-            if (component.name == objectName)
-            {
-                return component;
-            }
-        }
-
-        return null;
-    }
-
-    private static void EnsureEventSystem()
-    {
-        EventSystem eventSystem = EventSystem.current;
-        if (eventSystem == null)
-        {
-            eventSystem = FindAnyObjectByType<EventSystem>(FindObjectsInactive.Include);
-        }
-
-        if (eventSystem == null)
-        {
-            GameObject eventSystemObject = new GameObject("EventSystem");
-            eventSystem = eventSystemObject.AddComponent<EventSystem>();
-        }
-
-        eventSystem.gameObject.SetActive(true);
-
-        if (eventSystem.GetComponent<BaseInputModule>() == null)
-        {
-            eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
-        }
-    }
 }

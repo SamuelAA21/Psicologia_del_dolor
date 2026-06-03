@@ -4,7 +4,7 @@ using Yarn.Unity;
 
 public class MiniGameBridge : MonoBehaviour
 {
-    [SerializeField] private string miniGameSceneName = "FirstMiniGame";
+    [SerializeField] private string miniGameSceneName = GameSceneNames.BreathingMiniGame;
 
     [YarnCommand("iniciar_respiracion")]
     public void IniciarRespiracion()

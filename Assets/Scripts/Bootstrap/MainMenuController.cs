@@ -1,16 +1,12 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MainMenuController : MonoBehaviour
 {
-    private const string MenuSceneName = "Interfaz";
-
     [Header("Escenas")]
-    [SerializeField] private string gameSceneName = "SampleScene";
+    [SerializeField] private string gameSceneName = GameSceneNames.MainGame;
 
     [Header("Botones")]
     [SerializeField] private Button playButton;
@@ -26,6 +22,7 @@ public class MainMenuController : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void InstallOnInitialScene()
     {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
         SceneManager.sceneLoaded += HandleSceneLoaded;
         EnsureMenuController(SceneManager.GetActiveScene());
     }
@@ -37,7 +34,7 @@ public class MainMenuController : MonoBehaviour
 
     private static void EnsureMenuController(Scene scene)
     {
-        if (!scene.name.Equals(MenuSceneName, System.StringComparison.OrdinalIgnoreCase))
+        if (!GameSceneNames.IsMainMenu(scene.name))
         {
             return;
         }
@@ -112,7 +109,7 @@ public class MainMenuController : MonoBehaviour
         }
 
         ConfigureCanvas(canvas);
-        EnsureEventSystem();
+        RuntimeUiUtility.EnsureEventSystem();
 
         playButton = playButton != null ? playButton : FindButton("Play", "Jugar");
         if (playButton == null)
@@ -216,35 +213,10 @@ public class MainMenuController : MonoBehaviour
         Canvas canvas = canvasObject.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 
-        CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = 0.5f;
+        RuntimeUiUtility.EnsureCanvasScaler(canvasObject, new Vector2(1920f, 1080f));
 
         canvasObject.AddComponent<GraphicRaycaster>();
         return canvas;
-    }
-
-    private static void EnsureEventSystem()
-    {
-        EventSystem eventSystem = EventSystem.current;
-        if (eventSystem == null)
-        {
-            eventSystem = FindAnyObjectByType<EventSystem>(FindObjectsInactive.Include);
-        }
-
-        if (eventSystem == null)
-        {
-            GameObject eventSystemObject = new GameObject("EventSystem");
-            eventSystem = eventSystemObject.AddComponent<EventSystem>();
-        }
-
-        eventSystem.gameObject.SetActive(true);
-
-        if (eventSystem.GetComponent<BaseInputModule>() == null)
-        {
-            eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
-        }
     }
 
     private static void ConfigureCanvas(Canvas canvas)
@@ -263,20 +235,8 @@ public class MainMenuController : MonoBehaviour
             rect.sizeDelta = Vector2.zero;
         }
 
-        CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
-        if (scaler == null)
-        {
-            scaler = canvas.gameObject.AddComponent<CanvasScaler>();
-        }
-
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = 0.5f;
-
-        if (canvas.GetComponent<GraphicRaycaster>() == null)
-        {
-            canvas.gameObject.AddComponent<GraphicRaycaster>();
-        }
+        RuntimeUiUtility.EnsureCanvasScaler(canvas.gameObject, new Vector2(1920f, 1080f));
+        RuntimeUiUtility.EnsureGraphicRaycaster(canvas.gameObject);
     }
 
     private static Button CreateMenuButton(Transform parent, string objectName, string label, Vector2 position, Vector2 size)
@@ -323,7 +283,7 @@ public class MainMenuController : MonoBehaviour
         }
 
         text.text = label;
-        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.font = RuntimeUiUtility.DefaultFont;
         text.fontSize = fontSize;
         text.fontStyle = FontStyle.Bold;
         text.alignment = TextAnchor.MiddleCenter;
@@ -357,7 +317,7 @@ public class MainMenuController : MonoBehaviour
 
         Text text = textObject.AddComponent<Text>();
         text.text = value;
-        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.font = RuntimeUiUtility.DefaultFont;
         text.fontSize = fontSize;
         text.fontStyle = style;
         text.alignment = TextAnchor.MiddleCenter;

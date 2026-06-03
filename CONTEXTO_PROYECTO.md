@@ -429,6 +429,8 @@ El proyecto actualmente funciona por capas practicas:
 Servicios globales
   SceneLoader
   GameAudioManager
+  GameSceneNames
+  RuntimeUiUtility
 
 Escenas
   Bootstrap
@@ -462,6 +464,7 @@ Gameplay 3D
   CharacterRouteController
 
 Minijuego 2D
+  MiniGameRuntimeUtility
   BreathingController
   BreathingTherapyGuide
   PlayerJetpack
@@ -478,8 +481,11 @@ Minijuego 2D
 ```text
 Bootstrapper
   -> SceneLoader
+  -> GameSceneNames
 
 MainMenuController
+  -> GameSceneNames
+  -> RuntimeUiUtility
   -> SceneLoader
 
 Yarn / DialogueRunner
@@ -493,6 +499,7 @@ Chapter1EnvironmentController
   -> Chapter1GuidanceController
 
 FirstMiniGame
+  -> MiniGameRuntimeUtility
   -> BreathingController
   -> BreathingTherapyGuide
   -> ObstacleSpawner
@@ -508,6 +515,8 @@ PlayerCollision
 BreathingController.SessionCompleted
   -> MiniGameFlowController.OnWin()
   -> Chapter1ProgressState.ReportBreathingCompleted()
+  -> JetpackCompletionOverlay.ShowCompletion()
+  -> boton CONTINUAR
   -> SceneLoader.LoadSceneSafe("SampleScene")
 ```
 
@@ -545,6 +554,15 @@ BreathingController.SessionCompleted
   - PlayerPrefs para tutorial contextual mostrado.
 - Carga de recursos:
   - `Resources.Load` para audio, modelos Kenney y algunos assets UI.
+- Constantes compartidas:
+  - `GameSceneNames` centraliza `Bootstrap`, `Interfaz`, `SampleScene` y `FirstMiniGame`.
+  - No volver a escribir nombres de escena como strings sueltos en scripts nuevos.
+- UI runtime:
+  - `RuntimeUiUtility` centraliza `EventSystem`, fuente por defecto, `CanvasScaler`, `GraphicRaycaster` y busqueda de hijos en prefabs.
+  - Los overlays/HUD nuevos deben usar esta utilidad en lugar de duplicar helpers.
+- Resolucion del minijuego:
+  - `MiniGameRuntimeUtility` centraliza la busqueda del `BreathingController`, jugador y `BreathingTherapyGuide`.
+  - Esto evita que un script use por accidente un `BreathingController` duplicado/desactivado de la escena.
 
 ## 4. Sistemas globales
 
@@ -774,9 +792,12 @@ Assets/JetpackJoyrideTemplate/Scripts/ObstacleSpawner.cs
 Assets/JetpackJoyrideTemplate/Scripts/GameManager.cs
 Assets/JetpackJoyrideTemplate/Scripts/MoveLeft.cs
 Assets/JetpackJoyrideTemplate/Scripts/BackgroundLoop.cs
+Assets/Scripts/MiniGames/MiniGameRuntimeUtility.cs
 Assets/Scripts/MiniGames/MiniGameFlowController.cs
 Assets/Scripts/MiniGames/MiniGameBridge.cs
+Assets/Scripts/MiniGames/JetPackJoyride/JetpackPreGameOverlay.cs
 Assets/Scripts/MiniGames/JetPackJoyride/JetpackTherapyHud.cs
+Assets/Scripts/MiniGames/JetPackJoyride/JetpackCompletionOverlay.cs
 Assets/Scripts/MiniGames/JetPackJoyride/BreathingTargetZoneVisualizer.cs
 ```
 
@@ -795,6 +816,8 @@ BreathingController completa ciclos
   -> SessionCompleted
   -> MiniGameFlowController.OnWin()
   -> Chapter1ProgressState.ReportBreathingCompleted()
+  -> JetpackCompletionOverlay.ShowCompletion()
+  -> boton CONTINUAR
   -> SceneLoader.LoadSceneSafe("SampleScene")
 ```
 
@@ -997,6 +1020,8 @@ Dependencias destacadas:
 | --- | --- |
 | Menu inicial | `Assets/Scenes/Interfaz.unity`, `Assets/Scripts/Bootstrap/MainMenuController.cs`, `Assets/Interfaces` |
 | Carga/pantalla de carga | `Assets/Scripts/Bootstrap/SceneLoader.cs` |
+| Nombres de escena | `Assets/Scripts/Bootstrap/GameSceneNames.cs` |
+| Utilidades UI runtime | `Assets/Scripts/Bootstrap/RuntimeUiUtility.cs` |
 | Pausa | `Assets/Scripts/Bootstrap/PauseMenuController.cs` |
 | Audio | `Assets/Scripts/Bootstrap/GameAudioManager.cs`, `Assets/Resources` |
 | Tutorial contextual | `Assets/Scripts/Bootstrap/ContextualTutorialController.cs` |
@@ -1008,6 +1033,7 @@ Dependencias destacadas:
 | Jugador 3D | `Assets/Scripts/Player/PlayerController.cs` |
 | Lobo/NPC | `Assets/Scripts/NPC/Wolf/PetFollowController.cs` |
 | Minijuego respiracion | `Assets/Scenes/FirstMiniGame.unity`, `Assets/JetpackJoyrideTemplate/Scripts`, `Assets/Scripts/MiniGames` |
+| Dependencias minijuego | `Assets/Scripts/MiniGames/MiniGameRuntimeUtility.cs`, `Assets/Scripts/MiniGames/MiniGameFlowController.cs` |
 | UI editable minijuego | `Assets/Resources/UI/JetpackPreGameOverlay.prefab`, `Assets/Resources/UI/JetpackTherapyHud.prefab`, `Assets/Resources/UI/JetpackCompletionOverlay.prefab` |
 | HUD minijuego | `Assets/Resources/UI/JetpackTherapyHud.prefab`, `Assets/Scripts/MiniGames/JetPackJoyride/JetpackTherapyHud.cs` |
 | Finalizacion minijuego | `Assets/Resources/UI/JetpackCompletionOverlay.prefab`, `Assets/Scripts/MiniGames/JetPackJoyride/JetpackCompletionOverlay.cs` |

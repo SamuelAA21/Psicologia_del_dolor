@@ -4,7 +4,6 @@ using Yarn.Unity;
 
 public static class Chapter1RuntimePlaceholderSpawner
 {
-    private const string TargetSceneName = "SampleScene";
     private const string RootName = "Chapter1_Placeholders";
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -16,7 +15,7 @@ public static class Chapter1RuntimePlaceholderSpawner
 
     private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name != TargetSceneName || GameObject.Find(RootName) != null)
+        if (!GameSceneNames.IsMainGame(scene.name) || GameObject.Find(RootName) != null)
         {
             return;
         }

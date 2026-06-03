@@ -7,7 +7,7 @@ public class SceneLoader : MonoBehaviour
 {
     public static SceneLoader Instance { get; private set; }
 
-    [SerializeField] private string mainSceneName = "SampleScene";
+    [SerializeField] private string mainSceneName = GameSceneNames.MainGame;
     [SerializeField] private float fadeDuration = 0.35f;
     [SerializeField]
     private string[] loadingPhrases =
@@ -76,7 +76,7 @@ public class SceneLoader : MonoBehaviour
             return;
         }
 
-        SceneManager.LoadScene("SampleScene");
+        SceneManager.LoadScene(GameSceneNames.MainGame);
     }
 
     private IEnumerator LoadRoutine(string sceneName)
@@ -113,10 +113,7 @@ public class SceneLoader : MonoBehaviour
         fadeCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
         fadeCanvas.sortingOrder = 1000;
 
-        CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = 0.5f;
+        RuntimeUiUtility.EnsureCanvasScaler(canvasObject, new Vector2(1920f, 1080f));
 
         GameObject imageObject = new GameObject("Fade");
         imageObject.transform.SetParent(canvasObject.transform, false);
@@ -133,7 +130,7 @@ public class SceneLoader : MonoBehaviour
         GameObject textObject = new GameObject("LoadingPhrase");
         textObject.transform.SetParent(canvasObject.transform, false);
         loadingText = textObject.AddComponent<Text>();
-        loadingText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        loadingText.font = RuntimeUiUtility.DefaultFont;
         loadingText.fontSize = 26;
         loadingText.fontStyle = FontStyle.Bold;
         loadingText.alignment = TextAnchor.MiddleCenter;
@@ -206,7 +203,7 @@ public class SceneLoader : MonoBehaviour
 
     private static void PlaySceneMusic(string sceneName)
     {
-        if (sceneName.Equals("Interfaz", System.StringComparison.OrdinalIgnoreCase))
+        if (GameSceneNames.IsMainMenu(sceneName))
         {
             GameAudioManager.PlayMenuMusic();
             return;

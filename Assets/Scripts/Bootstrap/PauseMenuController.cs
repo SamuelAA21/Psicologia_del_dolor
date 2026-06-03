@@ -1,16 +1,11 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Yarn.Unity;
 
 public class PauseMenuController : MonoBehaviour
 {
-    private const string MenuSceneName = "Interfaz";
-    private const string BootstrapSceneName = "Bootstrap";
-
     [SerializeField] private Canvas pauseCanvas;
     [SerializeField] private Button resumeButton;
     [SerializeField] private Button mainMenuButton;
@@ -25,6 +20,7 @@ public class PauseMenuController : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
     {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
         SceneManager.sceneLoaded += HandleSceneLoaded;
         EnsureForScene(SceneManager.GetActiveScene());
     }
@@ -52,8 +48,7 @@ public class PauseMenuController : MonoBehaviour
 
     private static bool IsGameplayScene(string sceneName)
     {
-        return !sceneName.Equals(MenuSceneName, System.StringComparison.OrdinalIgnoreCase)
-            && !sceneName.Equals(BootstrapSceneName, System.StringComparison.OrdinalIgnoreCase);
+        return GameSceneNames.IsGameplayScene(sceneName);
     }
 
     private void Awake()
@@ -94,7 +89,7 @@ public class PauseMenuController : MonoBehaviour
         GameAudioManager.PlayUiClick();
         Time.timeScale = 1f;
         paused = false;
-        SceneLoader.LoadSceneSafe(MenuSceneName);
+        SceneLoader.LoadSceneSafe(GameSceneNames.MainMenu);
     }
 
     public void QuitGame()
@@ -130,7 +125,7 @@ public class PauseMenuController : MonoBehaviour
 
         if (paused)
         {
-            EnsureEventSystem();
+            RuntimeUiUtility.EnsureEventSystem();
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             return;
@@ -155,10 +150,7 @@ public class PauseMenuController : MonoBehaviour
         pauseCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
         pauseCanvas.sortingOrder = 900;
 
-        CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = 0.5f;
+        RuntimeUiUtility.EnsureCanvasScaler(canvasObject, new Vector2(1920f, 1080f));
 
         canvasObject.AddComponent<GraphicRaycaster>();
 
@@ -247,7 +239,7 @@ public class PauseMenuController : MonoBehaviour
 
         Text text = textObject.AddComponent<Text>();
         text.text = value;
-        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.font = RuntimeUiUtility.DefaultFont;
         text.fontSize = fontSize;
         text.fontStyle = style;
         text.alignment = TextAnchor.MiddleCenter;
@@ -262,28 +254,6 @@ public class PauseMenuController : MonoBehaviour
         rect.sizeDelta = size;
 
         return text;
-    }
-
-    private static void EnsureEventSystem()
-    {
-        EventSystem eventSystem = EventSystem.current;
-        if (eventSystem == null)
-        {
-            eventSystem = FindAnyObjectByType<EventSystem>(FindObjectsInactive.Include);
-        }
-
-        if (eventSystem == null)
-        {
-            GameObject eventSystemObject = new GameObject("EventSystem");
-            eventSystem = eventSystemObject.AddComponent<EventSystem>();
-        }
-
-        eventSystem.gameObject.SetActive(true);
-
-        if (eventSystem.GetComponent<BaseInputModule>() == null)
-        {
-            eventSystem.gameObject.AddComponent<InputSystemUIInputModule>();
-        }
     }
 
     private void RefreshMusicVolumeText()
