@@ -1,654 +1,516 @@
-# Contexto completo del proyecto: Psicologia_del_dolor
+# Contexto del proyecto: Psicologia_del_dolor
 
-Documento generado el 2026-05-26 a partir de una revision del repositorio local.
+Actualizado el 2026-06-02 para reflejar el estado real del repositorio local en `D:\Psicologia_del_dolor`.
 
-Este archivo sirve como mapa de contexto antes de pedir cambios nuevos. Resume que contiene el proyecto, para que sirve cada parte, como se usa, como se ejecuta, como se conectan las escenas y donde tocar cuando se quiera modificar una funcionalidad.
+Este documento es la referencia base antes de desarrollar nuevas funciones. Debe mantenerse sincronizado cuando cambien escenas, sistemas globales, dialogos, minijuegos, UI, audio o progresion.
 
 ## 1. Resumen ejecutivo
 
-`Psicologia_del_dolor` es un proyecto de Unity orientado a una experiencia interactiva sobre psicologia del dolor. La estructura actual mezcla:
+`Psicologia_del_dolor` es una experiencia interactiva en Unity sobre psicologia del dolor. El juego combina:
 
-- Una escena principal 3D con jugador en primera persona, dialogo con Yarn Spinner, un entorno navegable, UI de dialogo y una mascota/NPC tipo lobo.
-- Un flujo narrativo en Yarn que presenta decisiones sobre la relacion con el dolor y termina lanzando un minijuego.
-- Un minijuego 2D tipo Jetpack Joyride enfocado en respiracion consciente, donde el jugador debe regular su altura segun fases de respiracion.
-- Assets visuales importados: personajes, lobo, escenario 3D, skyboxes, imagenes de UI, sprites del minijuego, TextMesh Pro y muestras de Yarn Spinner.
+- Menu inicial con fondo propio, botones y cursor funcional.
+- Escena 3D principal con exploracion, jugador, puertas narrativas, lobo/mascota, dialogos Yarn y guia contextual.
+- Sistema de progreso del capitulo 1 con puertas, objetivos, indicadores visuales, brujula/inventario y recompensas.
+- Dialogos seleccionables por mouse y avanzables con Enter, sin depender de Escape.
+- Menu de pausa con control de volumen de musica.
+- Audio manager global con loop ambiental y alternancia temporal de musica.
+- Minijuego 2D tipo Jetpack Joyride enfocado en respiracion consciente.
 
-El proyecto usa Unity 6:
+Unity:
 
-- Version exacta del editor: `6000.4.4f1`.
-- Render pipeline: Universal Render Pipeline, URP `17.4.0`.
+- Version: `6000.4.4f1`.
+- Render pipeline: URP `17.4.0`.
 - Input: New Input System `1.19.0`.
-- Dialogos: Yarn Spinner Unity instalado desde GitHub.
-- Navegacion: `com.unity.ai.navigation` para NavMesh.
+- Dialogos: Yarn Spinner Unity desde GitHub.
+- Navegacion: `com.unity.ai.navigation`.
 - UI: UGUI y TextMesh Pro.
 
-La entrada esperada del juego es `Assets/Scenes/Bootstrap.unity`, que carga `SampleScene`. Desde `SampleScene`, el dialogo puede lanzar `FirstMiniGame`, y al completar o perder el minijuego se vuelve a `SampleScene`.
+## 2. Flujo oficial actual
 
-## 2. Estado general del repositorio
-
-Raiz del proyecto:
-
-```text
-C:\Psicologia_del_dolor
-```
-
-Carpetas principales:
-
-```text
-Assets/
-Packages/
-ProjectSettings/
-```
-
-Carpetas generadas por Unity que existen localmente pero no deberian tratarse como codigo fuente:
-
-```text
-Library/
-Temp/
-Logs/
-UserSettings/
-```
-
-La configuracion de `.gitignore` ya excluye esas carpetas generadas, ademas de `*.csproj`, `*.sln`, `*.slnx`, builds, logs y archivos temporales comunes.
-
-En la revision se detectaron cambios locales previos no creados por este documento:
-
-```text
-ProjectSettings/EditorBuildSettings.asset
-ProjectSettings/Packages/dev.yarnspinner/Assembly-CSharp-generated.ysls.json
-ProjectSettings/Packages/dev.yarnspinner/YarnSpinner.Unity.Samples-generated.ysls.json
-ProjectSettings/ShaderGraphSettings.asset
-```
-
-Esos archivos no fueron modificados para generar este resumen.
-
-## 3. Para que sirve el proyecto
-
-El objetivo funcional actual parece ser una experiencia educativa/terapeutica gamificada:
-
-1. El usuario entra a un espacio 3D.
-2. Un avatar o sistema de dialogo le presenta tres puertas o posturas frente al dolor:
-   - Retirada.
-   - Entender sin cambiar.
-   - Compromiso.
-3. Segun sus respuestas, avanza por nodos narrativos.
-4. El final del dialogo invita a practicar respiracion consciente.
-5. Se carga un minijuego 2D donde el movimiento vertical representa inhalar, sostener y exhalar.
-6. Al terminar los ciclos de respiracion o chocar con obstaculos, se vuelve a la escena principal.
-
-La idea central no es solo "jugar", sino usar mecanicas interactivas para representar:
-
-- Evitacion frente al dolor.
-- Comprension cognitiva.
-- Accion comprometida.
-- Autorregulacion por respiracion.
-- Relacion entre decisiones narrativas y actividades de practica.
-
-## 4. Como abrir el proyecto
-
-Requisitos recomendados:
-
-- Unity Hub.
-- Unity Editor `6000.4.4f1` o una version compatible de Unity 6.
-- Conexion a internet la primera vez si Unity necesita resolver paquetes desde el Package Manager o desde GitHub.
-
-Pasos:
-
-1. Abrir Unity Hub.
-2. Agregar el proyecto desde `C:\Psicologia_del_dolor`.
-3. Abrir con Unity `6000.4.4f1`.
-4. Esperar a que Unity regenere `Library/` y compile scripts.
-5. Abrir la escena `Assets/Scenes/Bootstrap.unity`.
-6. Presionar Play.
-
-Tambien se puede abrir directamente `Assets/Scenes/SampleScene.unity` durante desarrollo si se quiere saltar el bootstrap, pero para probar el flujo real conviene iniciar desde `Bootstrap`.
-
-## 5. Como ejecutar el flujo principal
-
-Escena recomendada para Play:
+La entrada recomendada es:
 
 ```text
 Assets/Scenes/Bootstrap.unity
 ```
 
-Flujo:
+Flujo real:
 
 ```text
-Bootstrap.unity
-  -> Bootstrapper.Start()
-  -> SceneLoader.Instance.LoadScene("SampleScene")
-  -> SampleScene.unity
-  -> dialogo Yarn / exploracion 3D
-  -> comando Yarn <<iniciar_respiracion MinigameBridge>>
-  -> MiniGameBridge.IniciarRespiracion()
-  -> FirstMiniGame.unity
-  -> BreathingController completa 4 ciclos o PlayerCollision detecta obstaculo
-  -> SceneLoader.LoadSceneSafe("SampleScene")
+Bootstrap
+  -> Bootstrapper
+  -> SceneLoader
+  -> Interfaz
+  -> MainMenuController
+  -> boton JUGAR
+  -> SampleScene
+  -> exploracion/dialogos/puertas/progreso
+  -> MiniGameBridge o SceneLoader
+  -> FirstMiniGame
+  -> completar respiracion o fallar
+  -> SampleScene
 ```
 
-Escenas incluidas en Build Settings:
+Escenas en Build Settings:
 
 ```text
-Assets/Scenes/Bootstrap.unity
-Assets/Scenes/FirstMiniGame.unity
-Assets/Scenes/SampleScene.unity
+0. Assets/Scenes/Bootstrap.unity
+1. Assets/Scenes/Interfaz.unity
+2. Assets/Scenes/FirstMiniGame.unity
+3. Assets/Scenes/SampleScene.unity
 ```
 
-Escena existente pero no incluida en Build Settings:
+## 3. Escenas
+
+### `Bootstrap.unity`
+
+Escena de arranque. Debe mantenerse como primera escena del build.
+
+Sistemas principales:
+
+- `Bootstrapper`: carga la primera escena configurada.
+- `SceneLoader`: singleton global de carga de escenas, con fade/pantalla de carga.
+- `GameAudioManager`: se auto-instala antes de cargar escenas.
+
+Estado actual esperado:
+
+- `Bootstrapper` carga `Interfaz`, no `SampleScene` directamente.
+- `SceneLoader` persiste con `DontDestroyOnLoad`.
+
+### `Interfaz.unity`
+
+Menu inicial actual del juego.
+
+Assets relacionados:
 
 ```text
-Assets/Scenes/Interfaz.unity
+Assets/Interfaces/FondoInterfaz.png
+Assets/Interfaces/BOTON JUGAR.png
+Assets/Interfaces/BOTON INSTRUCCIONES.png
+Assets/Interfaces/VIDEO INTERFAZ.mp4
 ```
 
-Esto significa que `Interfaz.unity` puede abrirse manualmente en el editor, pero no forma parte del build actual salvo que se agregue a `ProjectSettings/EditorBuildSettings.asset`.
+Sistema:
 
-## 6. Dependencias principales
+- `MainMenuController` se auto-instala en la escena.
+- Corrige cursor visible/desbloqueado.
+- Conecta boton `JUGAR` para cargar `SampleScene`.
+- Conecta boton `SALIR`.
+- Usa `FondoInterfaz.png` como fondo principal.
+- Asegura `EventSystem` si falta.
 
-Archivo de paquetes:
+### `SampleScene.unity`
 
-```text
-Packages/manifest.json
-```
+Escena principal jugable 3D.
 
-Dependencias directas destacadas:
+Contiene:
 
-| Paquete | Version / origen | Uso probable |
-| --- | --- | --- |
-| `com.unity.render-pipelines.universal` | `17.4.0` | Renderizado URP. |
-| `com.unity.inputsystem` | `1.19.0` | Movimiento 3D, UI, jetpack y acciones de entrada. |
-| `com.unity.ai.navigation` | `2.0.12` | NavMesh para mascota/NPC. |
-| `com.unity.ugui` | `2.0.0` | UI de dialogo, botones, canvas. |
-| `com.unity.timeline` | `1.8.12` | Disponible, aunque no se ve como eje principal en scripts propios. |
-| `com.unity.visualscripting` | `1.9.11` | Disponible, no parece ser el nucleo del flujo actual. |
-| `com.unity.test-framework` | `1.6.0` | Framework de tests instalado, pero no hay tests propios detectados. |
-| `dev.yarnspinner.unity` | GitHub | Dialogos Yarn Spinner. |
+- Entorno del capitulo 1.
+- Jugador 3D.
+- Lobo/mascota.
+- Sistema de dialogos Yarn.
+- Puertas narrativas.
+- Sistema de progreso.
+- Inventario simple.
+- Guia de proximidad/objetivos.
+- Menu de pausa.
+- Tutorial contextual.
+- Audio ambiental.
+- Puente al minijuego.
 
-El lockfile muestra ademas un paquete embebido:
+Sistemas auto-instalables o conectados:
 
-```text
-Packages/dev.yarnspinner.unity.samples
-```
+- `Chapter1EnvironmentController`
+- `Chapter1ProgressManager`
+- `Chapter1GuidanceController`
+- `Chapter1InventorySystem`
+- `DialogueInputController`
+- `DialoguePlayerControlLock`
+- `ContextualTutorialController`
+- `BrightEnvironmentController`
+- `PauseMenuController`
+- `GameAudioManager`
 
-Ese paquete contiene muestras de Yarn Spinner. Muchas carpetas y assets dentro de `Packages/dev.yarnspinner.unity.samples` son ejemplos externos y no deben confundirse con codigo propio del proyecto.
+### `FirstMiniGame.unity`
 
-## 7. Configuracion de proyecto Unity
+Minijuego 2D tipo Jetpack Joyride terapeutico.
 
-Archivo:
+Objetivo:
 
-```text
-ProjectSettings/ProjectSettings.asset
-```
+- Regular altura segun fases de respiracion.
+- Mantenerse dentro de la zona objetivo.
+- Completar ciclos de respiracion.
+- Evitar obstaculos.
 
-Datos relevantes:
+Sistemas:
 
-- `productName`: `Psicologia_del_Dolor`.
-- `companyName`: `DefaultCompany`.
-- `bundleVersion`: `0.1.0`.
-- Resolucion por defecto standalone: `1024x768`.
-- Resolucion Web por defecto: `960x600`.
-- Input activo: `activeInputHandler: 1`, equivalente al Input System nuevo.
-- API compatibility level: `.NET Standard 2.1` / valor Unity `6`.
-- Escena por defecto de template: `Assets/Scenes/SampleScene.unity`.
-
-Tags:
-
-```text
-ProjectSettings/TagManager.asset
-```
-
-Tag personalizado detectado:
-
-```text
-Obstacle
-```
-
-Este tag es critico para que `PlayerCollision` detecte choques en el minijuego.
-
-Render:
-
-```text
-Assets/Settings/PC_RPAsset.asset
-Assets/Settings/Mobile_RPAsset.asset
-Assets/Settings/PC_Renderer.asset
-Assets/Settings/Mobile_Renderer.asset
-Assets/Settings/UniversalRenderPipelineGlobalSettings.asset
-```
-
-El proyecto usa URP con assets separados para PC y mobile.
-
-## 8. Estructura de `Assets`
-
-Resumen de carpetas:
-
-```text
-Assets/
-  Characters/
-  Fantasy Skybox FREE/
-  Interfaces/
-  JetpackJoyrideTemplate/
-  Models/
-  Scenes/
-  Scripts/
-  Settings/
-  TextMesh Pro/
-  TutorialInfo/
-```
-
-Cantidad aproximada de archivos bajo `Assets`:
-
-```text
-520 archivos
-```
-
-Tipos principales detectados:
-
-| Tipo | Cantidad aproximada | Comentario |
-| --- | ---: | --- |
-| `.meta` | 283 | Metadatos Unity. |
-| `.png` | 81 | Texturas, UI, sprites, skyboxes. |
-| `.mat` | 58 | Materiales. |
-| `.cs` | 22 | Scripts propios y scripts tutoriales. |
-| `.asset` | 17 | Settings, TMP, NavMesh, terrain, perfiles. |
-| `.shader` | 14 | Principalmente TextMesh Pro. |
-| `.unity` | 6 | Escenas propias y demos de skybox. |
-| `.fbx` | 5 | Modelos de personajes/escenario. |
-| `.controller` | 4 | Animator Controllers. |
-| `.yarn` | 1 | Dialogo narrativo principal. |
-| `.yarnproject` | 1 | Proyecto Yarn Spinner. |
-| `.inputactions` | 1 | Asset de Input System. |
-| `.prefab` | 1 | Obstaculo del minijuego. |
-| `.mp4` | 1 | Video para interfaz. |
-
-## 9. Assets visuales y de contenido
-
-### 9.1 Personajes
-
-Carpeta:
-
-```text
-Assets/Characters
-```
-
-Contenido:
-
-- `Lobito/`: modelo `Wolf.fbx`, texturas y materiales del lobo.
-- `MenPlayer/`: modelo `PlayerWalk.fbx`, texturas y `MenTexture.mat`.
-- `WomanPlayer/`: modelos de mujer, incluido `MUJER CAMINANDO.fbx` y otro FBX con nombre que incluye `DISEÑO`, mas texturas.
-
-Uso detectado:
-
-- El lobo esta conectado con `PetFollowController` en `SampleScene`.
-- El jugador 3D usa `PlayerController` y un Animator Controller propio.
-
-### 9.2 Entorno 3D
-
-Carpeta:
-
-```text
-Assets/Models/CAP 1
-```
-
-Contenido destacado:
-
-- `MAP1/LVL1.fbx`.
-- Materiales como `MaderaV2.mat`, `LVL1 Variant.mat`, `defaultMat.mat`.
-- Texturas e imagenes asociadas.
-- `MAP1/InputSystem_Actions.inputactions`.
-- `MAP1/Readme.asset`.
-
-Uso detectado:
-
-- `SampleScene` contiene muchos cubos/objetos y NavMesh; parece ser el escenario 3D principal.
-- `SampleScene` contiene assets de navegacion bakeados bajo `Assets/Scenes/SampleScene/`.
-
-### 9.3 Skyboxes
-
-Carpeta:
-
-```text
-Assets/Fantasy Skybox FREE
-```
-
-Contenido:
-
-- Cubemaps y panoramas por ambiente: day, night, sunrise, sunset, rainy, snowy.
-- Escenas demo:
-  - `Demo with terrain.unity`
-  - `Demo without terrain.unity`
-- Readme y release notes del paquete.
-
-Uso:
-
-- Paquete visual importado para ambientacion. Las escenas demo no estan en Build Settings.
-
-### 9.4 Interfaz
-
-Carpeta:
-
-```text
-Assets/Interfaces
-```
-
-Contenido:
-
-- `BOTON JUGAR.png`.
-- `BOTON INSTRUCCIONES.png`.
-- `VIDEO INTERFAZ.mp4`.
-- `New Render Texture.renderTexture`.
-- `Play.controller`.
-
-Escena relacionada:
-
-```text
-Assets/Scenes/Interfaz.unity
-```
-
-Esta escena contiene:
-
-- `MainMenu`.
-- `Canvas`.
-- `Play`.
-- `Instructions`.
-- `RawImage`.
-- `VideoPlayer`.
-- `EventSystem`.
-- Camara.
+- `BreathingController`: controla fases Inhale, Hold, Exhale.
+- `BreathingTherapyGuide`: calcula si el jugador esta en zona y su `RegulationScore`.
+- `ObstacleSpawner`: genera corredores segun respiracion.
+- `PlayerJetpack`: controla ascenso/descenso.
+- `PlayerCollision`: registra errores por choque.
+- `GameManager`: controla estado, intentos y retorno a `SampleScene`.
+- `MiniGameFlowController`: escucha victoria y reporta progreso.
+- `JetpackTherapyHud`: HUD automatico del minijuego.
+- `BreathingTargetZoneVisualizer`: franja visual de zona correcta.
 
 Estado importante:
 
-- `Interfaz.unity` existe, pero no esta en Build Settings actualmente.
-- No se detecto script propio de menu que cargue escenas. Puede depender de eventos configurados desde UI, o estar incompleta.
+- El minijuego ya no debe fallar al primer choque. `GameManager` maneja intentos, por defecto `3`.
+- Tras un golpe, `PlayerCollision` da invulnerabilidad breve y feedback visual.
+- `ObstacleSpawner` intenta usar el `BreathingController` expuesto por `MiniGameFlowController` para evitar referencias equivocadas.
+- La escena todavia puede tener mas de un `BreathingController`; lo ideal a futuro es limpiar la escena y dejar uno solo.
 
-### 9.5 Minijuego Jetpack Joyride
+## 3.1 Objetos reales y arquitectura de escenas
 
-Carpeta:
+Esta seccion baja el contexto a objetos concretos de Unity. Sirve para saber que existe en escena y que sistemas lo controlan.
 
-```text
-Assets/JetpackJoyrideTemplate
-```
+### Objetos en `Bootstrap.unity`
 
-Contenido:
-
-- `Fondo.png`.
-- Sprites del jugador:
-  - `JetpackSheets/Asenso-removebg-preview.png`.
-  - `JetpackSheets/Desenso-removebg-preview.png`.
-  - `JetpackSheets/Normal-removebg-preview.png`.
-- Prefab:
-  - `Prefab/Obstacle.prefab`.
-- Scripts del minijuego.
-- Animator Controller:
-  - `Scripts/Player2DController.controller`.
-
-## 10. Escenas propias
-
-### 10.1 `Assets/Scenes/Bootstrap.unity`
-
-Proposito:
-
-- Escena raiz de arranque.
-- Mantiene el cargador global de escenas.
-
-Objeto principal:
+Objeto raiz:
 
 ```text
 AppRoot
 ```
 
-Componentes propios conectados:
+Componentes/sistemas:
 
 - `Bootstrapper`
-  - `firstScene: SampleScene`
+  - `firstScene: Interfaz`
 - `SceneLoader`
-  - `mainSceneName: SampleScene`
+  - Singleton persistente.
+  - Crea pantalla/fade de carga.
 
-Comportamiento:
+Arquitectura:
 
-1. `Bootstrapper.Start()` llama a `SceneLoader.Instance.LoadScene(firstScene)`.
-2. `SceneLoader` se marca con `DontDestroyOnLoad`.
-3. Se carga `SampleScene` en modo `Single`.
+- `Bootstrap` no contiene gameplay.
+- Su unica responsabilidad es crear los servicios iniciales y cargar la primera escena jugable/interfaz.
+- `SceneLoader` queda vivo entre escenas por `DontDestroyOnLoad`.
 
-Uso recomendado:
+### Objetos en `Interfaz.unity`
 
-- Usar esta escena como primera escena de ejecucion y de build.
-- No duplicar otro `SceneLoader` en escenas hijas salvo que se controle explicitamente.
+Objetos principales detectados:
 
-### 10.2 `Assets/Scenes/SampleScene.unity`
+```text
+MainMenu
+Root
+Canvas
+RawImage
+Play
+Instructions
+EventSystem
+Camera
+```
 
-Proposito:
+Componentes relevantes:
 
-- Escena principal jugable 3D.
-- Contiene entorno, jugador, dialogo Yarn, UI de dialogo, mascota/NPC y puente al minijuego.
+- `Canvas`: UI principal del menu.
+- `RawImage`: fondo visual, actualmente controlado para usar `FondoInterfaz.png`.
+- `Play`: boton de inicio.
+- `Instructions`: boton visual de instrucciones.
+- `EventSystem`: input/clicks de UI.
+- `Camera`: render de la escena de menu.
+- `MainMenuController`: se auto-instala si la escena activa es `Interfaz`.
 
-Objetos detectados:
+Arquitectura:
 
-- `Camera`.
-- `Root`.
-- `Canvas`.
-- `Line Presenter`.
-- `Options Presenter`.
-- `Continue Button`.
-- `Button Container`.
-- `Character Name`.
-- `Last Line`.
-- `YarnCommands`.
-- `MinigameBridge`.
-- `MiniGameStarter`.
-- `NavMesh Surface`.
-- Jugador 3D con `PlayerController`.
-- Lobo/mascota con `PetFollowController`.
-- Multiples objetos `Cube (...)`, `Plane`, `MeshCollider`, `Background`, etc.
+- La escena puede funcionar aunque algunos eventos de botones no esten configurados manualmente, porque `MainMenuController` busca los botones por nombre y los conecta.
+- El cursor se fuerza visible/desbloqueado en el menu.
+- El boton `JUGAR` carga `SampleScene` usando `SceneLoader`.
 
-Componentes propios importantes:
+### Objetos en `SampleScene.unity`
 
-`PlayerController`
+Objetos/sistemas principales detectados:
 
-- `moveSpeed: 5`.
-- `gravity: -9.81`.
-- `mouseSensitivity: 0.1`.
-- `cameraTransform` apunta a la camara.
-- `playerAnimator` conectado.
+```text
+Root
+Camera
+Canvas
+Line Presenter
+Options Presenter
+Continue Button
+Button Container
+Character Name
+Last Line
+YarnCommands
+MinigameBridge
+MiniGameStarter
+Chapter1_Placeholders
+BrujulaDelCompromiso
+Estacion4_Preguntas
+Progreso_1_Retirada
+Progreso_2_Entender
+Progreso_3_Compromiso
+Progreso_4_Preguntas
+Progreso_5_Brujula
+RewardLight
+GuidanceLight
+DoorLight 2
+DoorLight 2 (1)
+DoorLight 3
+Prompt
+LockedPrompt
+InteractionTrigger
+Lobito
+Player
+```
 
-`PetFollowController`
+Tambien hay multiples objetos genericos `GameObject`, luces y elementos de entorno importado. Varios de ellos son placeholders visuales o piezas del mapa.
 
-- `playerTarget` apunta al jugador.
-- `petAnimator` conectado.
-- `stopDistance: 1.5`.
-- `followStartDistance: 3`.
-- `runDistance: 6`.
-- `walkSpeed: 2.5`.
-- `runSpeed: 5`.
-- `idleBeforeSitTime: 5`.
-- Parametros Animator:
-  - `Speed`.
-  - `Sitting`.
-  - `IsWalking`.
+Componentes/sistemas por grupo:
 
-`YarnSceneCommands`
+- Dialogo:
+  - `DialogueRunner` desde Yarn Spinner.
+  - `Line Presenter`.
+  - `Options Presenter`.
+  - `Continue Button`.
+  - `YarnCommands` con `YarnSceneCommands`.
+  - `DialogueInputController` auto-instalado.
+  - `DialoguePlayerControlLock`.
+- Progreso capitulo 1:
+  - `Chapter1EnvironmentController`.
+  - `Chapter1ProgressManager`.
+  - `Chapter1ProgressState`.
+  - `Chapter1GuidanceController`.
+  - `Chapter1InventorySystem`.
+  - `RewardVisualController`.
+  - `Chapter1RuntimePlaceholderSpawner`.
+- Puertas/interaccion:
+  - `NarrativeInteractable`.
+  - `InteractionTrigger`.
+  - `Prompt`.
+  - `LockedPrompt`.
+  - Luces/indicadores (`GuidanceLight`, `DoorLight`, `RewardLight`).
+- Minijuego:
+  - `MinigameBridge`
+    - `miniGameSceneName: FirstMiniGame`
+  - `MiniGameStarter` existe en escena, pero debe revisarse si todavia es necesario.
+- Jugador:
+  - `PlayerController`.
+  - `CharacterController`.
+  - Animator del jugador.
+- Mascota:
+  - `PetFollowController`.
+  - `NavMeshAgent`.
+  - Animator del lobo.
 
-- Registra comando Yarn `load_scene`.
+Arquitectura:
 
-`MiniGameBridge`
+- `SampleScene` es el nucleo del juego 3D.
+- La escena depende de Yarn para narrativa, pero la progresion del capitulo se centraliza en scripts `Chapter1`.
+- Los comandos Yarn no deberian cambiar escenas directamente salvo mediante `SceneLoader` o puentes como `MiniGameBridge`.
+- El inventario, guia y tutorial deben respetar prioridad visual de dialogos.
+- Los sistemas auto-instalables se activan por nombre de escena y evitan depender de que el editor tenga todos los objetos manualmente configurados.
 
-- `miniGameSceneName: FirstMiniGame`.
-- Registra comando Yarn `iniciar_respiracion`.
+### Objetos en `FirstMiniGame.unity`
 
-Otros sistemas:
+Objetos principales detectados:
 
-- `DialogueRunner`, `Line Presenter`, `Options Presenter` y elementos UI de Yarn Spinner aparecen conectados desde paquetes externos.
-- `NavMesh Surface` existe para la navegacion de la mascota.
-- Hay assets de NavMesh bakeados:
-  - `Assets/Scenes/SampleScene/NavMesh-NavMesh Surface.asset`
-  - `Assets/Scenes/SampleScene/NavMesh-NavMesh Surface 1.asset`
-  - `Assets/Scenes/SampleScene/NavMesh-NavMesh Surface 2.asset`
+```text
+Player
+BreathingTherapyGuide
+Root
+Directional Light
+Fondo_1
+Fondo_2
+Spawner
+GameManager
+Main Camera
+```
 
-### 10.3 `Assets/Scenes/FirstMiniGame.unity`
+Componentes del `Player`:
 
-Proposito:
+- `Rigidbody2D`.
+- `Player2D`.
+- `PlayerJetpack`.
+- `PlayerCollision`.
+- `PlayerState` desde `Animation.cs`.
+- Sprites de ascenso/normal/descenso.
 
-- Minijuego 2D de respiracion consciente.
-- El jugador sube al presionar la tecla de impulso y cae cuando suelta.
-- Los obstaculos generan corredores verticales alineados con la fase respiratoria.
+Componentes de `BreathingTherapyGuide`:
 
-Objetos detectados:
+- Referencia al `BreathingController` del `GameManager`.
+- Referencia al transform del jugador.
+- Calcula:
+  - `IsPlayerInTargetZone`.
+  - `RegulationScore`.
+  - `CurrentInstruction`.
 
-- `Player`.
-- `BreathingTherapyGuide`.
-- `Root`.
-- `Directional Light`.
-- `Fondo_1`.
-- `Fondo_2`.
-- `Spawner`.
-- `GameManager`.
-- `Main Camera`.
+Componentes del `Spawner`:
 
-Componentes propios del jugador:
+- `ObstacleSpawner`
+  - `obstaclePrefab`: `Assets/JetpackJoyrideTemplate/Prefab/Obstacle.prefab`
+  - `breathingController`: no asignado en escena, se resuelve en runtime.
+- Puede tener otro `BreathingController`, por eso se considera deuda tecnica.
 
-- `Player2D`
-  - `jumpForce: 0.8`.
-  - `maxFallSpeed: -1.2`.
-  - `thrustKey: Space`.
-- `PlayerJetpack`
-  - `thrustVelocity: 2`.
-  - `maxFallSpeed: -3`.
-  - `fallbackKeyboardKey: Space`.
-  - `thrustAction` no esta asignado, por lo que cae al fallback de teclado.
-- `PlayerCollision`
-  - `obstacleTag: Obstacle`.
-- `PlayerState`
-  - Cambia sprite entre ascenso, transicion y descenso.
-  - `tiempoLimite: 1`.
-
-Componentes del sistema:
+Componentes del `GameManager`:
 
 - `GameManager`
-  - `returnSceneName: SampleScene`.
-- `MiniGameFlowController`
-  - Escucha `BreathingController.SessionCompleted`.
-  - Vuelve a `SampleScene`.
-- `ObstacleSpawner`
-  - `spawnInterval: 0.3`.
-  - `useCameraBounds: true`.
-  - `spawnFromCameraRightEdge: true`.
-  - `obstacleLifetime: 10`.
-  - `playAreaYRange: -2 a 3.5`.
-  - Usa `Obstacle.prefab`.
+  - `returnSceneName: SampleScene`
+  - `maxMistakes: 3` por defecto en script.
 - `BreathingController`
+  - Secuencia respiratoria serializada.
   - `playOnStart: true`.
-  - `sessionCycleCount: 4`.
-  - Secuencia serializada:
-    - Inhale: `4s`, rango jugador `1..3`, rango obstaculos `1..3`.
-    - Hold: `2s`, rango jugador `-0.5..0.5`, rango obstaculos `-1..1`.
-    - Exhale: `4s`, rango jugador `-3..-1`, rango obstaculos `-3..-1`.
-- `BreathingTherapyGuide`
-  - Referencia al `BreathingController`.
-  - Referencia al transform del jugador.
-  - Calcula si el jugador esta en zona objetivo y un puntaje de regulacion.
-- `BackgroundLoop`
-  - En `Fondo_1` y `Fondo_2`.
-  - `speed: 2`.
-  - `width: 35`.
+- `MiniGameFlowController`
+  - `returnSceneName: SampleScene`.
+  - Expone `Controller` para que otros sistemas usen el mismo controlador.
 
-Prefab de obstaculo:
+Objetos/sistemas auto-instalados al cargar la escena:
 
-```text
-Assets/JetpackJoyrideTemplate/Prefab/Obstacle.prefab
-```
+- `JetpackTherapyHud`.
+- `BreathingTargetZoneVisualizer`.
 
-Configuracion:
+Arquitectura:
 
-- Nombre: `Obstacle`.
-- Tag: `Obstacle`.
-- Script `MoveLeft`.
-- `speed: 5`.
-- `destroyWhenPastX: -12`.
+- `BreathingController` es el reloj del minijuego.
+- `BreathingTherapyGuide` interpreta si el jugador esta cumpliendo la fase actual.
+- `ObstacleSpawner` genera obstaculos dejando un corredor alrededor de la zona terapeutica.
+- `GameManager` decide si se puede jugar, cuantos errores quedan y cuando se pierde.
+- `MiniGameFlowController` decide la victoria y reporta el resultado al capitulo 1.
+- `JetpackTherapyHud` transforma el estado interno en feedback legible.
+- `BreathingTargetZoneVisualizer` transforma el rango objetivo en una franja visual del mundo.
 
-Notas importantes:
+## 3.2 Arquitectura tecnica por capas
 
-- En la escena hay al menos dos instancias de `BreathingController`: una en `Spawner` y otra en `GameManager`. El `MiniGameFlowController` referencia la del `GameManager`; `BreathingTherapyGuide` tambien referencia esa. Conviene revisar si `ObstacleSpawner` usa la misma o encuentra otra por `FindObjectOfType`.
-- El jugador tiene `Player2D` y `PlayerJetpack` al mismo tiempo. Ambos pueden escribir `Rigidbody2D.linearVelocity` si el usuario presiona Space. Esto puede duplicar o competir en el control vertical.
-
-### 10.4 `Assets/Scenes/Interfaz.unity`
-
-Proposito:
-
-- Menu/interfaz inicial o pantalla con video.
-
-Objetos detectados:
-
-- `MainMenu`.
-- `Root`.
-- `Canvas`.
-- `RawImage`.
-- `Play`.
-- `Instructions`.
-- `EventSystem`.
-- `Camera`.
-- `VideoPlayer`.
-
-Assets relacionados:
-
-- `Assets/Interfaces/VIDEO INTERFAZ.mp4`.
-- `Assets/Interfaces/BOTON JUGAR.png`.
-- `Assets/Interfaces/BOTON INSTRUCCIONES.png`.
-- `Assets/Interfaces/Play.controller`.
-
-Estado:
-
-- No incluida en Build Settings.
-- No se detecto script propio de menu o carga de escena.
-- Si se quiere que sea pantalla inicial, debe agregarse a Build Settings y conectarse con `SceneLoader` o eventos `Button.onClick`.
-
-### 10.5 `Assets/Scenes/SampleScene.unity` vs `Assets/Scenes/Interfaz.unity`
-
-Actualmente la escena principal real es `SampleScene`, no `Interfaz`.
-
-Si el objetivo final es que el usuario vea primero un menu:
-
-1. Agregar `Interfaz.unity` a Build Settings.
-2. Moverla antes de `Bootstrap` o hacer que `Bootstrap` cargue `Interfaz`.
-3. Configurar el boton Play para cargar `SampleScene`.
-4. Mantener `SceneLoader` vivo si se requiere carga centralizada.
-
-## 11. Scripts propios: responsabilidades y uso
-
-### 11.1 Bootstrap y carga de escenas
-
-Carpeta:
+El proyecto actualmente funciona por capas practicas:
 
 ```text
-Assets/Scripts/Bootstrap
+Servicios globales
+  SceneLoader
+  GameAudioManager
+
+Escenas
+  Bootstrap
+  Interfaz
+  SampleScene
+  FirstMiniGame
+
+UI global/runtime
+  MainMenuController
+  PauseMenuController
+  ContextualTutorialController
+  DialogueInputController
+
+Narrativa
+  Yarn Spinner
+  IntroLvl.yarn
+  YarnSceneCommands
+  MiniGameBridge
+
+Capitulo 1
+  Chapter1EnvironmentController
+  Chapter1ProgressManager
+  Chapter1ProgressState
+  Chapter1GuidanceController
+  Chapter1InventorySystem
+
+Gameplay 3D
+  PlayerController
+  NarrativeInteractable
+  PetFollowController
+  CharacterRouteController
+
+Minijuego 2D
+  BreathingController
+  BreathingTherapyGuide
+  PlayerJetpack
+  ObstacleSpawner
+  GameManager
+  MiniGameFlowController
+  JetpackTherapyHud
+  BreathingTargetZoneVisualizer
 ```
 
-#### `Bootstrapper.cs`
+### Flujo de dependencias
+
+```text
+Bootstrapper
+  -> SceneLoader
+
+MainMenuController
+  -> SceneLoader
+
+Yarn / DialogueRunner
+  -> YarnSceneCommands
+  -> MiniGameBridge
+  -> SceneLoader
+
+Chapter1EnvironmentController
+  -> Chapter1ProgressManager
+  -> Chapter1InventorySystem
+  -> Chapter1GuidanceController
+
+FirstMiniGame
+  -> BreathingController
+  -> BreathingTherapyGuide
+  -> ObstacleSpawner
+  -> JetpackTherapyHud
+  -> BreathingTargetZoneVisualizer
+
+PlayerCollision
+  -> GameManager.RegisterMistake()
+  -> GameManager.GameOver()
+  -> Chapter1ProgressState.ReportBreathingFailed()
+  -> SceneLoader.LoadSceneSafe("SampleScene")
+
+BreathingController.SessionCompleted
+  -> MiniGameFlowController.OnWin()
+  -> Chapter1ProgressState.ReportBreathingCompleted()
+  -> SceneLoader.LoadSceneSafe("SampleScene")
+```
+
+### Patrones tecnicos usados
+
+- Singletons:
+  - `SceneLoader.Instance`
+  - `GameAudioManager.Instance`
+  - `GameManager.Instance`
+  - `Chapter1ProgressManager.Instance`
+  - `Chapter1InventorySystem.Instance`
+  - `Chapter1EnvironmentController.Instance`
+- Auto-instalacion por escena:
+  - `MainMenuController`
+  - `PauseMenuController`
+  - `ContextualTutorialController`
+  - `BrightEnvironmentController`
+  - `DialogueInputController`
+  - `YarnUiKenneySkin`
+  - `Chapter1RuntimePlaceholderSpawner`
+  - `JetpackTherapyHud`
+  - `BreathingTargetZoneVisualizer`
+- Eventos:
+  - `BreathingController.PhaseChanged`
+  - `BreathingController.SessionCompleted`
+- Comandos Yarn:
+  - `load_scene`
+  - `iniciar_respiracion`
+  - `chapter1_stage`
+  - `chapter1_reward_unlocked`
+  - `chapter1_unlock`
+  - `chapter1_give_compass`
+- Persistencia simple:
+  - PlayerPrefs para volumen.
+  - PlayerPrefs para tutorial contextual mostrado.
+- Carga de recursos:
+  - `Resources.Load` para audio, modelos Kenney y algunos assets UI.
+
+## 4. Sistemas globales
+
+### `SceneLoader`
+
+Archivo:
+
+```text
+Assets/Scripts/Bootstrap/SceneLoader.cs
+```
 
 Responsabilidad:
 
-- Arrancar el flujo del juego.
-- En `Start`, carga la primera escena configurada.
+- Cargar escenas por nombre.
+- Mantener singleton global.
+- Mostrar fade/pantalla de carga con frases.
+- Proveer metodos estaticos seguros.
 
-Campo serializado:
-
-```csharp
-[SerializeField] private string firstScene = "SampleScene";
-```
-
-Uso:
-
-- Debe vivir en `Bootstrap.unity`.
-- Requiere que exista un `SceneLoader.Instance`.
-
-#### `SceneLoader.cs`
-
-Responsabilidad:
-
-- Singleton de carga de escenas.
-- Persiste entre escenas con `DontDestroyOnLoad`.
-- Evita multiples instancias.
-- Permite cargar una escena por nombre.
-- Permite fallback estatico si no existe instancia.
-
-Metodos principales:
+Metodos clave:
 
 ```csharp
 LoadScene(string sceneName)
@@ -657,484 +519,287 @@ LoadSceneSafe(string sceneName)
 LoadMainSceneSafe()
 ```
 
-Detalles:
+Uso recomendado:
 
-- `LoadScene` corta una rutina de carga anterior si existe.
-- `LoadRoutine` usa `SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single)`.
-- `currentScene` se guarda internamente pero no se expone.
-- `LoadMainSceneSafe` cae a `"SampleScene"` si no existe instancia.
+- Para cambios de escena desde codigo: `SceneLoader.LoadSceneSafe("NombreEscena")`.
+- Desde Yarn: usar comandos registrados.
 
-Uso:
+### `GameAudioManager`
 
-- Todo cambio de escena deberia pasar por `SceneLoader.LoadSceneSafe(...)` si se quiere mantener robustez.
-
-#### `YarnSceneComands.cs`
-
-Nombre de archivo:
+Archivo:
 
 ```text
-YarnSceneComands.cs
+Assets/Scripts/Bootstrap/GameAudioManager.cs
 ```
-
-Nota: el nombre tiene `Comands` con una sola `m`, pero la clase se llama `YarnSceneCommands`.
 
 Responsabilidad:
 
-- Exponer un comando Yarn:
+- Singleton global de audio.
+- Reproducir musica/ambiente por escena.
+- Guardar volumen en PlayerPrefs.
+- Exponer control de volumen al menu de pausa.
+
+Audio actual:
+
+```text
+Assets/Resources/AmbientalLoop.mp3
+Assets/Resources/Audio/GameplayMusic.mp3
+```
+
+Comportamiento actual:
+
+- En gameplay reproduce `AmbientalLoop`.
+- Despues de 60 segundos, reproduce `Audio/GameplayMusic` durante 45 segundos.
+- Luego vuelve a `AmbientalLoop` y repite el ciclo.
+- El volumen puede subir/bajar desde el menu de pausa.
+
+### `PauseMenuController`
+
+Archivo:
+
+```text
+Assets/Scripts/Bootstrap/PauseMenuController.cs
+```
+
+Responsabilidad:
+
+- Auto-instalar menu de pausa en escenas jugables.
+- Abrir/cerrar con Escape.
+- Mostrar cursor al pausar.
+- Reanudar juego.
+- Volver a menu principal.
+- Salir.
+- Bajar/subir volumen de musica.
+
+Regla importante:
+
+- Si Yarn esta ejecutando dialogo, Escape no abre pausa. Esto evita conflicto con dialogos.
+
+### `MainMenuController`
+
+Archivo:
+
+```text
+Assets/Scripts/Bootstrap/MainMenuController.cs
+```
+
+Responsabilidad:
+
+- Controlar `Interfaz`.
+- Forzar cursor visible.
+- Asegurar que los botones respondan.
+- Usar el fondo correcto.
+- Cargar `SampleScene` desde `JUGAR`.
+
+### `ContextualTutorialController`
+
+Archivo:
+
+```text
+Assets/Scripts/Bootstrap/ContextualTutorialController.cs
+```
+
+Responsabilidad:
+
+- Mostrar tutorial contextual al entrar a `SampleScene`.
+- Persistir si ya fue mostrado con PlayerPrefs.
+- No interferir con dialogos.
+
+Clave PlayerPrefs:
+
+```text
+Chapter1_ContextualTutorial_Shown
+```
+
+### `BrightEnvironmentController`
+
+Archivo:
+
+```text
+Assets/Scripts/Bootstrap/BrightEnvironmentController.cs
+```
+
+Responsabilidad:
+
+- Mejorar la iluminacion/cielo de `SampleScene`.
+- Crear o ajustar luz direccional.
+- Evitar ambiente oscuro/deprimente.
+
+## 5. Dialogos Yarn
+
+Archivos:
+
+```text
+Assets/Scripts/Dialogue/IntroLvl.yarn
+Assets/Scripts/Dialogue/StoryLvl.yarnproject
+```
+
+Sistemas relacionados:
+
+- `YarnSceneComands.cs`: comando `load_scene`.
+- `MiniGameBridge.cs`: comando `iniciar_respiracion`.
+- `DialogueInputController.cs`: mouse/Enter para avanzar o seleccionar.
+- `DialoguePlayerControlLock.cs`: bloquea control del jugador durante dialogos.
+- `YarnUiKenneySkin.cs`: skin visual para UI Yarn.
+
+Reglas actuales de input:
+
+- Enter o Numpad Enter avanza lineas/selecciones.
+- Click izquierdo puede avanzar lineas.
+- Mouse puede seleccionar opciones.
+- Escape queda reservado para pausa solo cuando no hay dialogo activo.
+
+Comandos Yarn utiles:
 
 ```yarn
 <<load_scene NombreEscena>>
+<<iniciar_respiracion MinigameBridge>>
 ```
 
-Implementacion:
-
-```csharp
-[YarnCommand("load_scene")]
-public void LoadScene(string sceneName)
-{
-    SceneLoader.LoadSceneSafe(sceneName);
-}
-```
-
-Uso:
-
-- Permite cargar escenas desde archivos `.yarn`.
-
-### 11.2 Jugador 3D
+## 6. Capitulo 1: puertas, progreso e inventario
 
 Carpeta:
 
 ```text
-Assets/Scripts/Player
+Assets/Scripts/Chapter1
 ```
 
-#### `PlayerController.cs`
+Scripts principales:
+
+- `Chapter1EnvironmentController.cs`
+- `Chapter1ProgressManager.cs`
+- `Chapter1ProgressState.cs`
+- `Chapter1GuidanceController.cs`
+- `Chapter1InventorySystem.cs`
+- `Chapter1RuntimePlaceholderSpawner.cs`
+- `Chapter1AmbientMotion.cs`
+- `Chapter1Billboard.cs`
+- `RewardVisualController.cs`
+- `DialoguePlayerControlLock.cs`
+
+Responsabilidades:
+
+- Crear/ordenar elementos faltantes del capitulo.
+- Gestionar progreso narrativo.
+- Mostrar objetivos/proximidad.
+- Mostrar indicadores visuales sobre puertas.
+- Manejar inventario simple tipo hotbar.
+- Entregar/mostrar brujula cuando corresponde.
+- Ocultar UI secundaria durante dialogos si estorba.
+- Reportar resultado del minijuego al progreso.
+
+Estado actual:
+
+- Las puertas deben tener indicador visual flotante.
+- La guia de proximidad/objetivos se muestra como ayuda de avance.
+- El inventario existe y debe estar por debajo de dialogos para no tapar lectura.
+- El progreso del minijuego se reporta con:
+
+```csharp
+Chapter1ProgressState.ReportBreathingCompleted()
+Chapter1ProgressState.ReportBreathingFailed()
+```
+
+## 7. Minijuego Jetpack Joyride de respiracion
+
+Carpetas:
+
+```text
+Assets/JetpackJoyrideTemplate
+Assets/Scripts/MiniGames
+Assets/Scripts/MiniGames/JetPackJoyride
+```
+
+Archivos principales:
+
+```text
+Assets/JetpackJoyrideTemplate/Scripts/BreathingController.cs
+Assets/JetpackJoyrideTemplate/Scripts/BreathingTherapyGuide.cs
+Assets/JetpackJoyrideTemplate/Scripts/PlayerJetpack.cs
+Assets/JetpackJoyrideTemplate/Scripts/PlayerCollision.cs
+Assets/JetpackJoyrideTemplate/Scripts/ObstacleSpawner.cs
+Assets/JetpackJoyrideTemplate/Scripts/GameManager.cs
+Assets/JetpackJoyrideTemplate/Scripts/MoveLeft.cs
+Assets/JetpackJoyrideTemplate/Scripts/BackgroundLoop.cs
+Assets/Scripts/MiniGames/MiniGameFlowController.cs
+Assets/Scripts/MiniGames/MiniGameBridge.cs
+Assets/Scripts/MiniGames/JetPackJoyride/JetpackTherapyHud.cs
+Assets/Scripts/MiniGames/JetPackJoyride/BreathingTargetZoneVisualizer.cs
+```
+
+Mecanica:
+
+```text
+Inhale -> subir/controlar altura
+Hold   -> sostener estabilidad
+Exhale -> bajar/controlar descenso
+```
+
+Victoria:
+
+```text
+BreathingController completa ciclos
+  -> SessionCompleted
+  -> MiniGameFlowController.OnWin()
+  -> Chapter1ProgressState.ReportBreathingCompleted()
+  -> SceneLoader.LoadSceneSafe("SampleScene")
+```
+
+Fallo:
+
+```text
+PlayerCollision detecta obstaculo
+  -> GameManager.RegisterMistake()
+  -> si quedan intentos: invulnerabilidad y feedback
+  -> si no quedan intentos: GameOver()
+  -> Chapter1ProgressState.ReportBreathingFailed()
+  -> SceneLoader.LoadSceneSafe("SampleScene")
+```
+
+HUD:
+
+- Fase actual.
+- Instruccion terapeutica.
+- Progreso de fase.
+- Ciclo actual.
+- Porcentaje de regulacion.
+- Estado "En zona" o "Ajusta altura".
+- Intentos restantes.
+
+Visualizacion:
+
+- `BreathingTargetZoneVisualizer` dibuja una franja horizontal en el mundo.
+- Azul si el jugador esta fuera de zona.
+- Verde si el jugador esta dentro de zona.
+
+Riesgos tecnicos vigentes:
+
+- Puede haber dos `BreathingController` en la escena.
+- El jugador puede tener `Player2D` y `PlayerJetpack` al mismo tiempo. Si ambos escriben velocidad vertical, pueden competir.
+- Recomendacion futura: dejar `PlayerJetpack` como controlador oficial y retirar/desactivar `Player2D` si no se usa.
+
+## 8. Jugador 3D
+
+Archivo:
+
+```text
+Assets/Scripts/Player/PlayerController.cs
+```
 
 Responsabilidad:
 
 - Movimiento en primera persona.
-- Lectura de `OnMove` y `OnLook` desde `PlayerInput`.
-- Rotacion horizontal del jugador.
-- Rotacion vertical de la camara.
+- Input `OnMove` y `OnLook`.
 - Gravedad con `CharacterController`.
-- Activacion del bool `IsWalking` en Animator.
+- Rotacion de camara.
+- Animator de caminata.
 
-Requisitos:
+Notas:
 
-```csharp
-[RequireComponent(typeof(CharacterController))]
-```
+- El cursor se bloquea durante gameplay normal.
+- Los sistemas de dialogo y pausa modifican cursor cuando corresponde.
 
-Metodos invocados por Input System:
-
-```csharp
-OnMove(InputValue value)
-OnLook(InputValue value)
-```
-
-Campos:
-
-- `moveSpeed`.
-- `gravity`.
-- `cameraTransform`.
-- `mouseSensitivity`.
-- `playerAnimator`.
-
-Comportamiento:
-
-- En `Awake`, bloquea y oculta el cursor.
-- En `Update`, procesa rotacion y movimiento.
-- El movimiento usa `transform.right` y `transform.forward`.
-- La camara se limita entre `-80` y `80` grados en el eje vertical.
-
-Animator relacionado:
-
-```text
-Assets/Scripts/Player/PlayerController.controller
-```
-
-Parametros:
-
-- `IsWalking` bool.
-
-Estados detectados:
-
-- `Idle`.
-- `IsWalking`.
-
-Transiciones:
-
-- `IsWalking == true`: pasa a caminar.
-- `IsWalking == false`: vuelve a idle.
-
-### 11.3 Dialogo Yarn
-
-Carpeta:
-
-```text
-Assets/Scripts/Dialogue
-```
-
-#### `StoryLvl.yarnproject`
-
-Configuracion:
-
-```json
-{
-  "sourceFiles": ["**/*.yarn"],
-  "baseLanguage": "es"
-}
-```
-
-Uso:
-
-- Proyecto Yarn que compila todos los archivos `.yarn` bajo la carpeta.
-- Idioma base: espanol.
-
-#### `IntroLvl.yarn`
-
-Responsabilidad:
-
-- Dialogo narrativo principal.
-- Define nodos:
-  - `Intro`.
-  - `Puerta1`.
-  - `Puerta1_A`.
-  - `Puerta1_B`.
-  - `Puerta2`.
-  - `Puerta2_A`.
-  - `Puerta2_B`.
-  - `Puerta3`.
-  - `Puerta3_A`.
-  - `Puerta3_B`.
-  - `Estacion4`.
-  - `Pregunta_A`.
-  - `Pregunta_B`.
-  - `Final`.
-
-Estructura narrativa:
-
-```text
-Intro
-  -> Puerta1: retirada
-      -> Puerta1_A
-      -> Puerta1_B
-  -> Puerta2: entender sin cambiar
-      -> Puerta2_A
-      -> Puerta2_B
-  -> Puerta3: compromiso
-      -> Puerta3_A
-      -> Puerta3_B
-      -> Estacion4
-          -> Pregunta_A
-          -> Pregunta_B
-  -> Final
-      -> iniciar_respiracion
-```
-
-Comando final:
-
-```yarn
-<<iniciar_respiracion MinigameBridge>>
-```
-
-Ese comando depende de `MiniGameBridge`.
-
-Nota sobre codificacion:
-
-- Al leer desde terminal algunos acentos se ven corruptos, por ejemplo `cobardÃ­a`. Es posible que el archivo este guardado con UTF-8 pero la consola lo haya mostrado con otra codificacion, o que el archivo ya tenga mojibake. Conviene abrirlo en Unity/VS Code y verificar encoding antes de editar texto narrativo.
-
-### 11.4 Puente a minijuego
-
-Carpeta:
-
-```text
-Assets/Scripts/MiniGames
-```
-
-#### `MiniGameBridge.cs`
-
-Responsabilidad:
-
-- Exponer comando Yarn para iniciar minijuego de respiracion.
-
-Comando:
-
-```csharp
-[YarnCommand("iniciar_respiracion")]
-public void IniciarRespiracion()
-```
-
-Flujo:
-
-1. Busca `DialogueRunner`.
-2. Si existe, llama `dialogueRunner.Stop()`.
-3. Espera un frame.
-4. Carga `FirstMiniGame` usando `SceneLoader.LoadSceneSafe`.
-
-Campo:
-
-```csharp
-[SerializeField] private string miniGameSceneName = "FirstMiniGame";
-```
-
-Uso:
-
-- Debe estar presente en la escena donde corre el dialogo Yarn.
-- En `SampleScene` aparece como objeto `MinigameBridge`.
-
-#### `MiniGameStarter.cs`
-
-Responsabilidad:
-
-- Buscar un `BreathingController` y ejecutar `StartCycle()`.
-
-Uso:
-
-- En `SampleScene` existe un objeto `MiniGameStarter`, pero el script esta pensado para minijuego. Hay que revisar si su presencia en `SampleScene` es intencional.
-
-#### `MiniGameFlowController.cs`
-
-Responsabilidad:
-
-- Escuchar el evento `SessionCompleted` del `BreathingController`.
-- Al completar la sesion, volver a `SampleScene`.
-
-Campo:
-
-```csharp
-[SerializeField] private string returnSceneName = "SampleScene";
-```
-
-Uso:
-
-- En `FirstMiniGame`, esta conectado al `BreathingController` del `GameManager`.
-
-### 11.5 Minijuego 2D: respiracion y jetpack
-
-Carpeta:
-
-```text
-Assets/JetpackJoyrideTemplate/Scripts
-```
-
-#### `BreathingController.cs`
-
-Responsabilidad:
-
-- Modelar una sesion de respiracion por fases.
-- Fases: `Inhale`, `Hold`, `Exhale`.
-- Avanzar por temporizador.
-- Calcular el centro terapeutico vertical segun fase y progreso.
-- Emitir eventos de cambio de fase y sesion completada.
-
-Clases/tipos:
-
-```csharp
-public enum BreathPhase { Inhale, Hold, Exhale }
-public class BreathingPhaseSettings
-public class BreathingController
-```
-
-Campos principales:
-
-- `phaseSequence`.
-- `playOnStart`.
-- `sessionCycleCount`.
-- `currentPhaseIndex`.
-- `phaseTimer`.
-- `completedCycles`.
-
-Eventos:
-
-```csharp
-public event Action<BreathingPhaseSettings> PhaseChanged;
-public event Action SessionCompleted;
-```
-
-Propiedades:
-
-- `CurrentPhase`.
-- `CurrentPhaseSettings`.
-- `CurrentPhaseProgress`.
-- `IsRunning`.
-- `CompletedCycles`.
-- `SessionCycleCount`.
-
-Metodos publicos:
-
-- `StartCycle()`.
-- `StopCycle()`.
-- `ResetCycle()`.
-- `TryGetCurrentPhaseSettings(out settings)`.
-- `GetTherapeuticCenterY()`.
-
-Curvas:
-
-- Inhalar usa `Mathf.Sin(progress * PI * 0.5)`.
-- Exhalar usa `1 - Mathf.Cos(progress * PI * 0.5)`.
-- Sostener mantiene el centro de entrada.
-
-Uso en minijuego:
-
-- `ObstacleSpawner` usa el centro terapeutico para abrir corredores.
-- `BreathingTherapyGuide` usa los rangos para calcular alineacion del jugador.
-- `MiniGameFlowController` vuelve a escena principal al completar ciclos.
-
-#### `BreathingTherapyGuide.cs`
-
-Responsabilidad:
-
-- Medir si el jugador esta dentro del rango vertical objetivo de la fase actual.
-- Acumular tiempo alineado y tiempo total.
-- Exponer `RegulationScore`.
-- Exponer `CurrentInstruction`.
-
-Propiedades:
-
-- `IsPlayerInTargetZone`.
-- `RegulationScore`.
-- `CurrentInstruction`.
-
-Uso:
-
-- Puede alimentar UI futura de puntaje, feedback o instrucciones.
-- Actualmente no se detecto UI propia que muestre ese puntaje.
-
-#### `ObstacleSpawner.cs`
-
-Responsabilidad:
-
-- Generar obstaculos a la derecha de la camara.
-- Crear bandas de obstaculos arriba y abajo de un corredor libre.
-- Ubicar el corredor segun `BreathingController.GetTherapeuticCenterY()`.
-
-Campos importantes:
-
-- `obstaclePrefab`.
-- `targetCamera`.
-- `spawnInterval`.
-- `useCameraBounds`.
-- `spawnFromCameraRightEdge`.
-- `horizontalSpawnPadding`.
-- `obstacleLifetime`.
-- `playAreaYRange`.
-- `corridorHeight`.
-- `obstacleVerticalSpacing`.
-- `corridorPadding`.
-- `breathingController`.
-
-Logica:
-
-1. Cada `spawnInterval`, si el juego puede correr, llama `Spawn()`.
-2. Calcula rango vertical jugable.
-3. Calcula centro del corredor.
-4. Genera obstaculos desde el minimo hasta el borde inferior del corredor.
-5. Genera obstaculos desde el borde superior del corredor hasta el maximo.
-6. Destruye cada obstaculo despues de `obstacleLifetime`.
-
-#### `PlayerJetpack.cs`
-
-Responsabilidad:
-
-- Controlar impulso vertical por Input System o fallback a teclado.
-- Limitar caida.
-
-Campos:
-
-- `thrustVelocity`.
-- `maxFallSpeed`.
-- `thrustAction`.
-- `fallbackKeyboardKey`.
-
-Uso:
-
-- En escena `FirstMiniGame`, `thrustAction` no esta asignado; usa Space.
-
-#### `Player2D.cs`
-
-Responsabilidad:
-
-- Control 2D simple alternativo.
-- Si Space esta presionado, asigna velocidad vertical.
-- Limita caida.
-
-Nota:
-
-- En `FirstMiniGame`, este script convive con `PlayerJetpack`. Conviene dejar solo uno si se busca un control mas claro.
-
-#### `PlayerCollision.cs`
-
-Responsabilidad:
-
-- Detectar colision o trigger contra objetos con tag `Obstacle`.
-- Llamar `GameManager.Instance.GameOver()`.
-
-Requisitos:
-
-- Los obstaculos deben tener tag `Obstacle`.
-- Debe existir `GameManager.Instance`.
-
-#### `GameManager.cs`
-
-Responsabilidad:
-
-- Singleton simple del minijuego.
-- Controla estado `isGameOver`.
-- Expone `CanPlay`.
-- En Game Over vuelve a escena principal.
-
-Metodos:
-
-- `GameOver()`.
-- `ResetSession()`.
-
-Campo:
-
-- `returnSceneName = "SampleScene"`.
-
-#### `BackgroundLoop.cs`
-
-Responsabilidad:
-
-- Mover fondos hacia la izquierda.
-- Reposicionar un fondo a la derecha del ultimo cuando sale por el borde izquierdo.
-
-Uso:
-
-- `Fondo_1` y `Fondo_2` en `FirstMiniGame`.
-
-#### `MoveLeft.cs`
-
-Responsabilidad:
-
-- Mover objetos a la izquierda y destruirlos al pasar cierto X.
-
-Uso:
-
-- `Obstacle.prefab`.
-
-#### `Animation.cs`
-
-Clase:
-
-```csharp
-public class PlayerState : MonoBehaviour
-```
-
-Responsabilidad:
-
-- Cambiar sprite del jugador segun `PlayerJetpack.IsThrusting`.
-- Usa tres sprites:
-  - `volar`.
-  - `transicion`.
-  - `bajar`.
-
-Nota:
-
-- El archivo se llama `Animation.cs`, pero la clase se llama `PlayerState`. En Unity esto compila si no es `MonoBehaviour` publico? En C#, una clase publica puede estar en un archivo con nombre distinto, pero para scripts Unity de `MonoBehaviour` es buena practica que el archivo y la clase coincidan. Aqui Unity ya lo tiene referenciado, pero podria confundir a futuro.
-
-### 11.6 NPC, mascota y rutas
+## 9. Lobo, NPC y rutas
 
 Carpeta:
 
@@ -1142,134 +807,30 @@ Carpeta:
 Assets/Scripts/NPC
 ```
 
-#### `RouteSharedTypes.cs`
-
-Responsabilidad:
-
-- Definir tipos compartidos para acciones/rutas.
-
-Tipos:
-
-```csharp
-RouteActionType
-RouteCondition
-RouteAction
-RouteStep
-```
-
-Acciones disponibles:
-
-- `SetGameObjectActive`.
-- `SetAnimatorTrigger`.
-- `SetAnimatorBool`.
-- `MoveTransformToPoint`.
-- `SetYarnVariable`.
-- `InvokeUnityEvent`.
-
-Uso:
-
-- Compartido por `CharacterRouteController` y `PetFollowController`.
-
-#### `CharacterRouteController.cs`
-
-Responsabilidad:
-
-- Ejecutar rutas/acciones para personajes.
-- Puede dispararse por variable Yarn o manualmente.
-- Puede construir una ruta por defecto si no hay pasos configurados.
-
-Campos principales:
-
-- `triggerYarnVariable`.
-- `triggerExpectedValue`.
-- `autoRunOnStart`.
-- `steps`.
-- `buildDefaultRouteIfEmpty`.
-- `defaultMoveTarget`.
-- `defaultAnimator`.
-- `defaultAnimatorTrigger`.
-- `defaultMoveDuration`.
-
-Flujo:
-
-1. En `Awake`, configura defaults.
-2. Busca `InMemoryVariableStorage`.
-3. En `Start`, si `autoRunOnStart`, corre ruta.
-4. `CheckAndRun()` revisa variable Yarn.
-5. Recorre `RouteStep`.
-6. Evalua condiciones.
-7. Ejecuta acciones en orden.
-
-Acciones:
-
-- Activar/desactivar GameObject.
-- Setear trigger/bool de Animator.
-- Mover transform a un punto con interpolacion.
-- Setear variable booleana de Yarn.
-- Invocar `UnityEvent`.
-
-#### `PetFollowController.cs`
-
-Responsabilidad:
-
-- Controlar una mascota/NPC con NavMesh.
-- Seguir al jugador.
-- Cambiar estados: idle, following, sitting, running route.
-- Integrarse con Yarn y rutas por pasos.
-
-Requisitos:
-
-```csharp
-[RequireComponent(typeof(NavMeshAgent))]
-```
-
-Estados:
-
-```csharp
-PetState.Idle
-PetState.Following
-PetState.Sitting
-PetState.RunningRoute
-```
-
-Comportamiento de seguimiento:
-
-- Si el jugador esta lejos mas que `followStartDistance`, empieza a seguir.
-- Si esta dentro de `stopDistance`, se detiene.
-- Si supera `runDistance`, usa `runSpeed`; si no, `walkSpeed`.
-- Si pasa demasiado tiempo quieto, pasa a sitting.
-
-Animator:
-
-- `Speed` float.
-- `Sitting` bool.
-- `IsWalking` bool.
-- `greetTrigger` opcional.
-
-Yarn/rutas:
-
-- Similar a `CharacterRouteController`, permite ejecutar `RouteStep`.
-- Puede dispararse por variable Yarn.
-- Puede construir ruta por defecto con variable `$mascota_activa`.
-
-Controlador Animator relacionado:
+Archivos:
 
 ```text
+Assets/Scripts/NPC/RouteSharedTypes.cs
+Assets/Scripts/NPC/CharacterRouteController.cs
+Assets/Scripts/NPC/Wolf/PetFollowController.cs
 Assets/Scripts/NPC/Wolf/PetController.controller
 ```
 
-Parametros:
+Responsabilidad:
 
-- `IsWalking` bool.
-- `Sitting` bool.
-- `Speed` float.
+- Seguimiento del lobo con NavMesh.
+- Estados idle/follow/sit/route.
+- Ejecucion de rutas por pasos.
+- Integracion con variables Yarn.
 
-Estados detectados:
+Validar al tocar:
 
-- `Idle`.
-- `IsWalking`.
+- NavMesh bakeado.
+- `NavMeshAgent` presente.
+- Referencia al jugador.
+- Parametros animator: `IsWalking`, `Sitting`, `Speed`.
 
-## 12. Input System
+## 10. Input
 
 Asset:
 
@@ -1277,565 +838,200 @@ Asset:
 Assets/Models/CAP 1/MAP1/InputSystem_Actions.inputactions
 ```
 
-Action maps detectados:
+Uso actual:
 
-### Player
+- `PlayerController`: callbacks `OnMove`, `OnLook`.
+- `PlayerJetpack`: puede usar `InputActionReference`, pero tambien tiene fallback con Space.
+- UI/Yarn: EventSystem y acciones UI.
 
-Acciones:
+Teclas importantes:
 
-- `Move`: `Vector2`.
-- `Look`: `Vector2`.
-- `Attack`: button.
-- `Interact`: button, con interaccion `Hold`.
-- `Crouch`: button.
-- `Jump`: button.
-- `Previous`: button.
-- `Next`: button.
-- `Sprint`: button.
+- Movimiento 3D: WASD/flechas.
+- Interaccion: depende del binding `Interact`.
+- Jetpack: Space.
+- Dialogo: mouse, Enter, Numpad Enter, Space segun estado.
+- Pausa: Escape fuera de dialogo.
 
-Bindings principales:
+## 11. Assets relevantes
 
-- Movimiento:
-  - WASD.
-  - Flechas.
-  - Gamepad left stick.
-  - Joystick stick.
-  - XR primary 2D axis.
-- Mirada:
-  - Mouse/pointer delta.
-  - Gamepad right stick.
-- Jump:
-  - Space.
-  - Gamepad south button.
-  - XR secondary button.
-- Sprint:
-  - Left Shift.
-  - Gamepad left stick press.
-  - XR trigger.
-- Interact:
-  - `E`.
-  - Gamepad north/east segun bindings.
-
-### UI
-
-Acciones:
-
-- `Navigate`.
-- `Submit`.
-- `Cancel`.
-- `Point`.
-- `Click`.
-- `RightClick`.
-- `MiddleClick`.
-- `ScrollWheel`.
-- `TrackedDevicePosition`.
-- `TrackedDeviceOrientation`.
-
-Uso:
-
-- `PlayerController` usa los callbacks `OnMove` y `OnLook`.
-- `PlayerJetpack` puede usar `InputActionReference`, pero actualmente en escena usa fallback Space.
-- UI y Yarn probablemente usan acciones UI desde el EventSystem/InputSystemUIInputModule.
-
-## 13. Dialogo Yarn: como extenderlo
-
-Archivo principal:
+### Interfaces
 
 ```text
-Assets/Scripts/Dialogue/IntroLvl.yarn
+Assets/Interfaces/FondoInterfaz.png
+Assets/Interfaces/BOTON JUGAR.png
+Assets/Interfaces/BOTON INSTRUCCIONES.png
+Assets/Interfaces/VIDEO INTERFAZ.mp4
 ```
 
-Para agregar una nueva decision:
-
-1. Crear un nuevo nodo:
-
-```yarn
-title: NuevoNodo
----
-Avatar: Texto...
-
--> Opcion
-    <<jump OtroNodo>>
-===
-```
-
-2. Agregar un salto desde un nodo existente:
-
-```yarn
--> Ir al nuevo contenido
-    <<jump NuevoNodo>>
-```
-
-3. Si se quiere activar una escena:
-
-```yarn
-<<load_scene NombreEscena>>
-```
-
-4. Si se quiere lanzar la respiracion:
-
-```yarn
-<<iniciar_respiracion MinigameBridge>>
-```
-
-5. Si se quieren usar variables con rutas/NPC:
-
-```yarn
-<<set $mascota_activa = true>>
-```
-
-Luego el componente correspondiente debe llamar `CheckAndRun()` o estar conectado a eventos/comandos.
-
-## 14. Flujo de minijuego de respiracion
-
-Objetivo de la mecanica:
-
-- Inhalar: el corredor y/o zona objetivo sube.
-- Sostener: el jugador debe estabilizarse.
-- Exhalar: el corredor baja.
-- Completar una secuencia de fases equivale a un ciclo.
-- Se requieren `4` ciclos para completar la sesion.
-
-Logica central:
+### Audio
 
 ```text
-BreathingController.StartCycle()
-  -> phase Inhale
-  -> PhaseChanged
-  -> timer llega a duracion
-  -> phase Hold
-  -> timer llega a duracion
-  -> phase Exhale
-  -> timer llega a duracion
-  -> completedCycles++
-  -> repetir hasta sessionCycleCount
-  -> SessionCompleted
-  -> MiniGameFlowController.OnWin()
-  -> SceneLoader.LoadSceneSafe("SampleScene")
+Assets/Resources/AmbientalLoop.mp3
+Assets/Resources/Audio/GameplayMusic.mp3
 ```
 
-Logica de obstaculos:
+### Minijuego
 
 ```text
-ObstacleSpawner.Update()
-  -> cada spawnInterval
-  -> GetCorridorCenterY()
-  -> BreathingController.GetTherapeuticCenterY()
-  -> genera banda inferior de obstaculos
-  -> genera banda superior de obstaculos
+Assets/JetpackJoyrideTemplate/Fondo.png
+Assets/JetpackJoyrideTemplate/JetpackSheets/Asenso-removebg-preview.png
+Assets/JetpackJoyrideTemplate/JetpackSheets/Desenso-removebg-preview.png
+Assets/JetpackJoyrideTemplate/JetpackSheets/Normal-removebg-preview.png
+Assets/JetpackJoyrideTemplate/Prefab/Obstacle.prefab
 ```
 
-Logica de derrota:
+### UI Kenney
 
 ```text
-PlayerCollision.OnCollisionEnter2D / OnTriggerEnter2D
-  -> si tag == Obstacle
-  -> GameManager.GameOver()
-  -> SceneLoader.LoadSceneSafe("SampleScene")
+Assets/Resources/KenneyUi
+Assets/Resources/KenneyPrototypeKit
 ```
 
-## 15. Controladores Animator
+## 12. Dependencias
 
-### `Assets/Scripts/Player/PlayerController.controller`
-
-Uso:
-
-- Animator del jugador 3D.
-
-Parametro:
-
-- `IsWalking` bool.
-
-Estados:
-
-- `Idle`.
-- `IsWalking`.
-
-Script que lo maneja:
-
-- `PlayerController.cs`.
-
-### `Assets/Scripts/NPC/Wolf/PetController.controller`
-
-Uso:
-
-- Animator del lobo/mascota.
-
-Parametros:
-
-- `IsWalking` bool.
-- `Sitting` bool.
-- `Speed` float.
-
-Script que lo maneja:
-
-- `PetFollowController.cs`.
-
-### `Assets/JetpackJoyrideTemplate/Scripts/Player2DController.controller`
-
-Uso:
-
-- Animator Controller simple con un estado `Idle`.
-- No parece ser el nucleo del cambio visual actual, porque `PlayerState` cambia sprites manualmente.
-
-### `Assets/Interfaces/Play.controller`
-
-Uso:
-
-- Animator Controller de UI para boton Play.
-
-Parametros:
-
-- `Normal`.
-- `Highlighted`.
-- `Pressed`.
-- `Selected`.
-- `Disabled`.
-
-## 16. Build y escenas
-
-Build Settings actual:
+Archivo:
 
 ```text
-0. Assets/Scenes/Bootstrap.unity
-1. Assets/Scenes/FirstMiniGame.unity
-2. Assets/Scenes/SampleScene.unity
+Packages/manifest.json
 ```
 
-Recomendaciones:
+Dependencias destacadas:
 
-- Mantener `Bootstrap` primero si se quiere que `SceneLoader` exista desde el inicio.
-- Si `Interfaz` sera menu inicial, decidir si:
-  - `Bootstrap` carga `Interfaz`, y el menu carga `SampleScene`.
-  - O `Interfaz` es la primera escena y contiene/invoca `SceneLoader`.
-- Todo nombre usado en `LoadSceneSafe` debe estar incluido en Build Settings para builds finales.
+| Paquete | Version/origen | Uso |
+| --- | --- | --- |
+| `com.unity.render-pipelines.universal` | `17.4.0` | URP |
+| `com.unity.inputsystem` | `1.19.0` | Input |
+| `com.unity.ai.navigation` | `2.0.12` | NavMesh |
+| `com.unity.ugui` | `2.0.0` | UI runtime |
+| `com.unity.2d.sprite` | `1.0.0` | Sprites 2D |
+| `com.unity.timeline` | `1.8.12` | Timeline disponible |
+| `com.unity.test-framework` | `1.6.0` | Tests, no hay suite propia consolidada |
+| `dev.yarnspinner.unity` | GitHub | Dialogos |
 
-## 17. Convenciones y patrones actuales
+## 13. Convenciones del proyecto
 
-Patrones positivos existentes:
+- Usar `SceneLoader.LoadSceneSafe` para cargar escenas.
+- Mantener `Bootstrap` primero.
+- Usar `RuntimeInitializeOnLoadMethod` solo para sistemas globales o auto-instalables muy claros.
+- Usar `SerializeField` para parametros configurables desde inspector.
+- Evitar UI que tape dialogos. Dialogo debe tener prioridad visual.
+- Evitar que Escape avance dialogos. Escape es pausa solo fuera de dialogo.
+- Mantener recursos cargados con `Resources.Load` dentro de `Assets/Resources`.
+- Para minijuego, preferir feedback visual simple sobre animaciones 3D complejas.
 
-- Uso de `SerializeField` para configurar desde inspector.
-- Uso de `RequireComponent` en controladores que necesitan componentes Unity.
-- Carga centralizada de escenas con `SceneLoader`.
-- Uso de comandos Yarn para desacoplar dialogo y escenas.
-- Eventos C# (`SessionCompleted`) para separar respiracion y flujo de escena.
-- Configuraciones de fases de respiracion serializables.
-- Sistema generico de rutas con `RouteStep`, `RouteAction` y `RouteCondition`.
+## 14. Riesgos y deuda tecnica
 
-Convenciones de nombres:
+1. `FirstMiniGame` puede tener multiples `BreathingController`.
+   - Ya se mitigaron referencias desde `MiniGameFlowController` y `ObstacleSpawner`.
+   - Ideal: limpiar escena y dejar una sola instancia.
 
-- Escenas usan nombres en ingles: `Bootstrap`, `SampleScene`, `FirstMiniGame`, `Interfaz`.
-- Scripts mezclan ingles y espanol:
-  - `IniciarRespiracion`.
-  - `YarnSceneComands`.
-  - `PetFollowController`.
-  - `MiniGameFlowController`.
-- Variables Yarn usan espanol:
-  - `$tema_siguiente_desbloqueado`.
-  - `$mascota_activa`.
+2. El jugador 2D puede tener dos controladores verticales.
+   - `Player2D` y `PlayerJetpack` pueden competir.
+   - Ideal: elegir uno.
 
-## 18. Puntos importantes antes de pedir cambios
+3. `SampleScene` sigue con nombre generico.
+   - Ideal: renombrar a `MainWorld`, `Chapter1Scene` o similar cuando el flujo este estable.
 
-### 18.1 Si quieres cambiar narrativa
-
-Tocar principalmente:
-
-```text
-Assets/Scripts/Dialogue/IntroLvl.yarn
-```
-
-Validar:
-
-- Encoding del archivo.
-- Que los nodos tengan `===`.
-- Que los comandos Yarn existan como `[YarnCommand]`.
-- Que las escenas referenciadas esten en Build Settings.
-
-### 18.2 Si quieres cambiar movimiento del jugador 3D
-
-Tocar:
-
-```text
-Assets/Scripts/Player/PlayerController.cs
-Assets/Models/CAP 1/MAP1/InputSystem_Actions.inputactions
-Assets/Scripts/Player/PlayerController.controller
-```
-
-Validar:
-
-- `PlayerInput` debe apuntar al asset de input correcto.
-- El Action Map por defecto debe ser `Player`.
-- Los callbacks deben llamarse `OnMove`, `OnLook`, etc. segun Input System.
-
-### 18.3 Si quieres cambiar el lobo/mascota
-
-Tocar:
-
-```text
-Assets/Scripts/NPC/Wolf/PetFollowController.cs
-Assets/Scripts/NPC/Wolf/PetController.controller
-Assets/Characters/Lobito
-```
-
-Validar:
-
-- NavMesh bakeado.
-- `NavMeshAgent` en el objeto.
-- Referencia a jugador.
-- Parametros Animator exactos: `IsWalking`, `Sitting`, `Speed`.
-
-### 18.4 Si quieres cambiar rutas o eventos de NPC
-
-Tocar:
-
-```text
-Assets/Scripts/NPC/RouteSharedTypes.cs
-Assets/Scripts/NPC/CharacterRouteController.cs
-Assets/Scripts/NPC/Wolf/PetFollowController.cs
-```
-
-Validar:
-
-- Variables Yarn con prefijo `$`.
-- `InMemoryVariableStorage` en escena.
-- Llamadas a `CheckAndRun()` desde eventos/comandos.
-
-### 18.5 Si quieres cambiar el minijuego
-
-Tocar:
-
-```text
-Assets/JetpackJoyrideTemplate/Scripts/BreathingController.cs
-Assets/JetpackJoyrideTemplate/Scripts/ObstacleSpawner.cs
-Assets/JetpackJoyrideTemplate/Scripts/PlayerJetpack.cs
-Assets/JetpackJoyrideTemplate/Scripts/PlayerCollision.cs
-Assets/JetpackJoyrideTemplate/Scripts/GameManager.cs
-Assets/Scenes/FirstMiniGame.unity
-```
-
-Validar:
-
-- Que exista solo un controlador de respiracion activo o que las referencias sean explicitas.
-- Que el obstaculo tenga tag `Obstacle`.
-- Que `FirstMiniGame` y `SampleScene` esten en Build Settings.
-- Que no haya dos scripts compitiendo por la velocidad vertical del jugador.
-
-### 18.6 Si quieres agregar menu inicial
-
-Tocar:
-
-```text
-Assets/Scenes/Interfaz.unity
-Assets/Interfaces
-ProjectSettings/EditorBuildSettings.asset
-Assets/Scripts/Bootstrap/Bootstrapper.cs
-```
-
-Decidir:
-
-- Si `Bootstrap` carga `Interfaz`.
-- Si `Interfaz` carga `SampleScene`.
-- Si `SceneLoader` vive en `Bootstrap` o en menu.
-
-## 19. Riesgos y observaciones detectadas
-
-Estos puntos no son necesariamente errores confirmados, pero conviene revisarlos antes de ampliar el proyecto.
-
-1. `FirstMiniGame` tiene `Player2D` y `PlayerJetpack` en el mismo objeto.
-   - Ambos modifican la velocidad vertical del `Rigidbody2D`.
-   - Recomendacion: elegir uno como controlador oficial.
-
-2. `FirstMiniGame` parece tener dos `BreathingController`.
-   - Uno en `Spawner`.
-   - Uno en `GameManager`.
-   - `MiniGameFlowController` referencia el del `GameManager`.
-   - Recomendacion: usar una sola instancia o asignar referencias explicitas para evitar que `FindObjectOfType` tome la incorrecta.
-
-3. `MiniGameStarter` aparece en `SampleScene`.
-   - Ese script busca `BreathingController` y llama `StartCycle()`.
-   - En `SampleScene` no parece corresponder al flujo principal 3D.
-   - Recomendacion: confirmar si esta ahi por accidente.
-
-4. `YarnSceneComands.cs` tiene typo en el nombre de archivo.
-   - Clase: `YarnSceneCommands`.
-   - Archivo: `YarnSceneComands.cs`.
-   - Recomendacion: renombrar si no rompe referencias Unity.
+4. `YarnSceneComands.cs` tiene typo en nombre de archivo.
+   - Clase correcta: `YarnSceneCommands`.
+   - Ideal: renombrar archivo con cuidado.
 
 5. `Animation.cs` contiene clase `PlayerState`.
-   - Recomendacion: renombrar archivo a `PlayerState.cs` para claridad.
+   - Ideal: renombrar a `PlayerState.cs` si Unity conserva referencias.
 
-6. `IntroLvl.yarn` puede tener problemas de codificacion.
-   - En terminal se observan caracteres mal renderizados.
-   - Recomendacion: abrir en VS Code, confirmar UTF-8 y corregir mojibake si existe.
+6. No hay tests automatizados propios.
+   - Recomendado: PlayMode tests para `BreathingController`, `SceneLoader`, `GameAudioManager` y progreso del capitulo.
 
-7. `Interfaz.unity` no esta en Build Settings.
-   - Si debe ser menu real, el build no la usara actualmente.
+7. Hay muchos sistemas auto-instalables.
+   - Son utiles para avanzar rapido, pero a futuro conviene pasar configuraciones criticas a prefabs/escenas claras.
 
-8. No se detectaron tests propios.
-   - El paquete `com.unity.test-framework` esta instalado.
-   - Recomendacion: agregar PlayMode tests para `SceneLoader`, `BreathingController` y minijuego si el proyecto crecera.
+## 15. Donde tocar segun la peticion
 
-9. `Packages/dev.yarnspinner.unity.samples` esta embebido y tiene muchisimos assets.
-   - Puede ser util como referencia, pero aumenta peso y ruido.
-   - Recomendacion: mantener solo si se necesitan muestras o assets compartidos.
-
-10. La escena principal se llama `SampleScene`.
-    - Para un proyecto final convendria renombrar a algo semantico como `MainWorld`, `NivelDolor01` o `EscenaPrincipal`.
-
-## 20. Donde estan las piezas criticas
-
-| Necesidad | Archivo/carpeta |
+| Necesidad | Archivos principales |
 | --- | --- |
-| Arranque del juego | `Assets/Scenes/Bootstrap.unity` |
-| Carga de escenas | `Assets/Scripts/Bootstrap/SceneLoader.cs` |
-| Escena 3D principal | `Assets/Scenes/SampleScene.unity` |
-| Movimiento jugador 3D | `Assets/Scripts/Player/PlayerController.cs` |
-| Animator jugador | `Assets/Scripts/Player/PlayerController.controller` |
-| Dialogo principal | `Assets/Scripts/Dialogue/IntroLvl.yarn` |
-| Proyecto Yarn | `Assets/Scripts/Dialogue/StoryLvl.yarnproject` |
-| Comando Yarn para cargar escena | `Assets/Scripts/Bootstrap/YarnSceneComands.cs` |
-| Comando Yarn para minijuego | `Assets/Scripts/MiniGames/MiniGameBridge.cs` |
-| Minijuego | `Assets/Scenes/FirstMiniGame.unity` |
-| Respiracion | `Assets/JetpackJoyrideTemplate/Scripts/BreathingController.cs` |
-| Spawner de obstaculos | `Assets/JetpackJoyrideTemplate/Scripts/ObstacleSpawner.cs` |
-| Control jetpack | `Assets/JetpackJoyrideTemplate/Scripts/PlayerJetpack.cs` |
-| Colisiones minijuego | `Assets/JetpackJoyrideTemplate/Scripts/PlayerCollision.cs` |
-| GameManager minijuego | `Assets/JetpackJoyrideTemplate/Scripts/GameManager.cs` |
-| Mascota/lobo | `Assets/Scripts/NPC/Wolf/PetFollowController.cs` |
-| Tipos de rutas | `Assets/Scripts/NPC/RouteSharedTypes.cs` |
-| Rutas de personajes | `Assets/Scripts/NPC/CharacterRouteController.cs` |
-| Menu/interfaz | `Assets/Scenes/Interfaz.unity`, `Assets/Interfaces` |
-| Config paquetes | `Packages/manifest.json` |
-| Version Unity | `ProjectSettings/ProjectVersion.txt` |
-| Build Settings | `ProjectSettings/EditorBuildSettings.asset` |
+| Menu inicial | `Assets/Scenes/Interfaz.unity`, `Assets/Scripts/Bootstrap/MainMenuController.cs`, `Assets/Interfaces` |
+| Carga/pantalla de carga | `Assets/Scripts/Bootstrap/SceneLoader.cs` |
+| Pausa | `Assets/Scripts/Bootstrap/PauseMenuController.cs` |
+| Audio | `Assets/Scripts/Bootstrap/GameAudioManager.cs`, `Assets/Resources` |
+| Tutorial contextual | `Assets/Scripts/Bootstrap/ContextualTutorialController.cs` |
+| Cielo/ambiente | `Assets/Scripts/Bootstrap/BrightEnvironmentController.cs`, `SampleScene` |
+| Dialogos | `Assets/Scripts/Dialogue/IntroLvl.yarn`, `DialogueInputController.cs` |
+| Puertas/progreso capitulo 1 | `Assets/Scripts/Chapter1` |
+| Inventario | `Assets/Scripts/Chapter1/Chapter1InventorySystem.cs` |
+| Objetivos/proximidad | `Assets/Scripts/Chapter1/Chapter1GuidanceController.cs` |
+| Jugador 3D | `Assets/Scripts/Player/PlayerController.cs` |
+| Lobo/NPC | `Assets/Scripts/NPC/Wolf/PetFollowController.cs` |
+| Minijuego respiracion | `Assets/Scenes/FirstMiniGame.unity`, `Assets/JetpackJoyrideTemplate/Scripts`, `Assets/Scripts/MiniGames` |
+| HUD minijuego | `Assets/Scripts/MiniGames/JetPackJoyride/JetpackTherapyHud.cs` |
+| Zona objetivo minijuego | `Assets/Scripts/MiniGames/JetPackJoyride/BreathingTargetZoneVisualizer.cs` |
 
-## 21. Comandos utiles para inspeccion
+## 16. Comandos utiles
 
-Listar archivos del proyecto sin carpetas generadas:
+Listar scripts:
 
 ```powershell
-rg --files -g '!bin' -g '!obj' -g '!node_modules' -g '!dist' -g '!build' -g '!coverage'
+rg --files Assets -g "*.cs" -g "!**/*.meta"
 ```
 
-Listar scripts propios:
+Buscar comandos Yarn:
 
 ```powershell
-rg --files Assets -g '*.cs' -g '!**/*.meta'
+rg "YarnCommand" Assets/Scripts
 ```
 
-Buscar comandos Yarn registrados:
+Buscar referencias a escenas:
 
 ```powershell
-rg 'YarnCommand' Assets/Scripts
+rg "Bootstrap|Interfaz|SampleScene|FirstMiniGame" Assets ProjectSettings
 ```
 
-Buscar referencias a una escena:
-
-```powershell
-rg 'SampleScene|FirstMiniGame|Bootstrap|Interfaz' Assets ProjectSettings
-```
-
-Buscar scripts con logs o advertencias:
-
-```powershell
-rg 'Debug.LogWarning|Debug.LogError|TODO|FIXME' Assets/Scripts Assets/JetpackJoyrideTemplate/Scripts
-```
-
-Ver escenas incluidas en build:
+Ver escenas del build:
 
 ```powershell
 Get-Content ProjectSettings/EditorBuildSettings.asset
 ```
 
-## 22. Recomendacion de roadmap tecnico
+Ver cambios locales:
 
-Orden sugerido para estabilizar el proyecto antes de crecer:
-
-1. Definir el flujo inicial oficial:
-   - `Bootstrap -> SampleScene`, o
-   - `Bootstrap -> Interfaz -> SampleScene`.
-
-2. Limpiar el minijuego:
-   - Elegir `PlayerJetpack` o `Player2D`.
-   - Dejar una sola instancia de `BreathingController`.
-   - Conectar UI a `BreathingTherapyGuide.CurrentInstruction` y `RegulationScore` si se quiere feedback terapeutico.
-
-3. Revisar encoding de Yarn:
-   - Corregir acentos si estan rotos.
-   - Mantener todo en UTF-8.
-
-4. Consolidar nombres:
-   - `SampleScene` a nombre final.
-   - `YarnSceneComands.cs` a `YarnSceneCommands.cs`.
-   - `Animation.cs` a `PlayerState.cs`.
-
-5. Documentar decisiones de diseno terapeutico:
-   - Que representa cada puerta.
-   - Que objetivo tiene cada fase de respiracion.
-   - Que feedback debe recibir el usuario.
-
-6. Agregar tests minimos:
-   - `BreathingController` avanza fases y dispara `SessionCompleted`.
-   - `SceneLoader` ignora nombres vacios.
-   - `ObstacleSpawner` no spawnea si falta prefab.
-
-## 23. Glosario rapido
-
-- `Bootstrap`: escena inicial que crea el cargador global.
-- `SceneLoader`: singleton para cambiar escenas.
-- `SampleScene`: escena principal 3D actual.
-- `FirstMiniGame`: escena de respiracion tipo jetpack.
-- `Interfaz`: escena de menu/interfaz, actualmente fuera del build.
-- `Yarn`: formato de dialogo narrativo usado por Yarn Spinner.
-- `YarnCommand`: metodo C# invocable desde Yarn.
-- `DialogueRunner`: componente de Yarn Spinner que ejecuta dialogos.
-- `InMemoryVariableStorage`: almacenamiento de variables Yarn.
-- `NavMeshAgent`: componente de Unity para navegacion automatica.
-- `RouteStep`: paso de una ruta de NPC.
-- `RouteAction`: accion ejecutable dentro de una ruta.
-- `BreathingController`: sistema de fases de respiracion.
-- `ObstacleSpawner`: generador de obstaculos del minijuego.
-- `RegulationScore`: proporcion de tiempo en que el jugador estuvo en zona objetivo.
-
-## 24. Resumen mental para futuras peticiones
-
-Si la peticion es de narrativa, casi seguro empieza en:
-
-```text
-Assets/Scripts/Dialogue/IntroLvl.yarn
+```powershell
+git -c safe.directory=D:/Psicologia_del_dolor status --short
 ```
 
-Si la peticion es de flujo entre escenas, empieza en:
+## 17. Roadmap tecnico recomendado
 
-```text
-Assets/Scripts/Bootstrap/SceneLoader.cs
-Assets/Scripts/MiniGames/MiniGameBridge.cs
-ProjectSettings/EditorBuildSettings.asset
-```
+Prioridad alta:
 
-Si la peticion es de jugabilidad 3D, empieza en:
+1. Probar flujo completo desde `Bootstrap`: menu, jugar, dialogo, minijuego, retorno.
+2. Limpiar `FirstMiniGame`: un solo `BreathingController`, un solo controlador vertical.
+3. Ajustar dificultad del minijuego: velocidad, densidad de obstaculos, duracion de ciclos.
+4. Revisar visualmente que HUD, inventario, dialogos y pausa no se tapen.
 
-```text
-Assets/Scenes/SampleScene.unity
-Assets/Scripts/Player/PlayerController.cs
-Assets/Scripts/NPC/Wolf/PetFollowController.cs
-```
+Prioridad media:
 
-Si la peticion es del minijuego de respiracion, empieza en:
+1. Convertir sistemas auto-instalables importantes en prefabs configurables.
+2. Agregar sonidos de UI, golpe y victoria.
+3. Mejorar feedback de puertas con efectos simples, luces y particulas.
+4. Agregar pantalla de resultado del minijuego antes de volver a `SampleScene`.
 
-```text
-Assets/Scenes/FirstMiniGame.unity
-Assets/JetpackJoyrideTemplate/Scripts/BreathingController.cs
-Assets/JetpackJoyrideTemplate/Scripts/ObstacleSpawner.cs
-Assets/JetpackJoyrideTemplate/Scripts/PlayerJetpack.cs
-```
+Prioridad futura:
 
-Si la peticion es de menu inicial, empieza en:
+1. Renombrar escenas y scripts genericos.
+2. Agregar PlayMode tests.
+3. Documentar intencion terapeutica por mecanica.
+4. Preparar build final con resolucion, calidad, icono y controles consistentes.
 
-```text
-Assets/Scenes/Interfaz.unity
-Assets/Interfaces
-Assets/Scripts/Bootstrap/Bootstrapper.cs
-```
+## 18. Resumen mental
 
-Este documento debe actualizarse cuando cambien escenas, flujo de carga, scripts base, nombres de escena, comandos Yarn o arquitectura del minijuego.
+Si el cambio es de menu, empieza en `MainMenuController`.
+
+Si el cambio es de escena/carga, empieza en `SceneLoader`.
+
+Si el cambio es de audio o volumen, empieza en `GameAudioManager` y `PauseMenuController`.
+
+Si el cambio es de dialogos, empieza en `IntroLvl.yarn` y `DialogueInputController`.
+
+Si el cambio es de puertas, objetivos o brujula, empieza en `Assets/Scripts/Chapter1`.
+
+Si el cambio es del minijuego, empieza en `FirstMiniGame`, `BreathingController`, `ObstacleSpawner`, `GameManager`, `PlayerCollision`, `JetpackTherapyHud` y `BreathingTargetZoneVisualizer`.
+
+Este documento queda como mapa actualizado del proyecto y debe revisarse cada vez que se agregue una funcionalidad grande.
