@@ -115,6 +115,11 @@ public class Chapter1InventorySystem : MonoBehaviour
     {
         RefreshDialogueVisibility();
 
+        if (IsDialogueRunning())
+        {
+            return;
+        }
+
         if (allowNumberSelection)
         {
             HandleNumberSelection();
@@ -457,6 +462,12 @@ public class Chapter1InventorySystem : MonoBehaviour
 
         inventoryVisible = shouldBeVisible;
         inventoryCanvas.gameObject.SetActive(shouldBeVisible);
+    }
+
+    private bool IsDialogueRunning()
+    {
+        EnsureDialogueRunner();
+        return dialogueRunner != null && dialogueRunner.IsDialogueRunning;
     }
 
     private void HandleNumberSelection()

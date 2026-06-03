@@ -28,6 +28,14 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
     }
 
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     public bool RegisterMistake()
     {
         if (isGameOver)

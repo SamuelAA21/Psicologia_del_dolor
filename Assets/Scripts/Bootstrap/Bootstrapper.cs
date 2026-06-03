@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Bootstrapper : MonoBehaviour
 {
@@ -6,6 +7,15 @@ public class Bootstrapper : MonoBehaviour
 
     private void Start()
     {
-        SceneLoader.Instance.LoadScene(firstScene);
+        if (SceneLoader.Instance != null)
+        {
+            SceneLoader.Instance.LoadScene(firstScene);
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(firstScene))
+        {
+            SceneManager.LoadScene(firstScene);
+        }
     }
 }

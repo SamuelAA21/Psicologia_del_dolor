@@ -165,7 +165,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 51146291}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: acb19a43b4cdd8141af51176dbf3e771, type: 3}
   m_Name: 
@@ -271,8 +271,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 076f0c2135429f24abdb79d65f0dfa36, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerJetpack
-  thrustVelocity: 2
-  maxFallSpeed: -3
+  thrustVelocity: 0.5
+  descentVelocity: -0.5
+  maxFallSpeed: -0.5
+  useControlledGravity: 1
+  controlledGravityScale: 0
   thrustAction: {fileID: 0}
   fallbackKeyboardKey: 1
 --- !u!114 &51146301
@@ -730,7 +733,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObstacleSpawner
   obstaclePrefab: {fileID: 4520333451353797842, guid: 8f47d986cc62fe04f8f4a306305ccca4, type: 3}
   targetCamera: {fileID: 0}
-  spawnInterval: 0.3
+  spawnInterval: 0.45
   useCameraBounds: 1
   spawnFromCameraRightEdge: 1
   spawnXPosition: 10
@@ -738,10 +741,13 @@ MonoBehaviour:
   obstacleLifetime: 10
   fallbackSpawnYRange: {x: -2, y: 2}
   playAreaYRange: {x: -2, y: 3.5}
-  corridorHeight: 3
+  corridorHeight: 2.8
   obstacleVerticalSpacing: 0
-  corridorPadding: 0
-  breathingController: {fileID: 0}
+  corridorPadding: 0.25
+  breathingController: {fileID: 1413024512}
+  playerTransform: {fileID: 51146292}
+  compensateObstacleTravelTime: 1
+  timingPadding: 0.1
 --- !u!4 &1170865466
 Transform:
   m_ObjectHideFlags: 0
@@ -764,7 +770,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1170865464}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c4d8eec3973b66243874d6649a6e3076, type: 3}
   m_Name: 
@@ -772,20 +778,20 @@ MonoBehaviour:
   phaseSequence:
   - phase: 0
     duration: 4
-    playerTargetYRange: {x: 1, y: 3}
-    obstacleSpawnYRange: {x: 1, y: 3}
-    guidanceText: Inhala y asciende suavemente.
+    playerTargetYRange: {x: 1.45, y: 2.45}
+    obstacleSpawnYRange: {x: 1.45, y: 2.45}
+    guidanceText: Manten Espacio: sube lento.
   - phase: 1
-    duration: 2
-    playerTargetYRange: {x: -0.5, y: 0.5}
-    obstacleSpawnYRange: {x: -1, y: 1}
-    guidanceText: Sosten con estabilidad en el centro.
+    duration: 3
+    playerTargetYRange: {x: 1.45, y: 2.45}
+    obstacleSpawnYRange: {x: 1.45, y: 2.45}
+    guidanceText: Pulsa suave: manten altura.
   - phase: 2
     duration: 4
-    playerTargetYRange: {x: -3, y: -1}
-    obstacleSpawnYRange: {x: -3, y: -1}
-    guidanceText: Exhala y desciende sin prisa.
-  playOnStart: 1
+    playerTargetYRange: {x: -0.55, y: 0.45}
+    obstacleSpawnYRange: {x: -0.55, y: 0.45}
+    guidanceText: Suelta Espacio: baja lento.
+  playOnStart: 0
   sessionCycleCount: 4
 --- !u!1 &1364058401
 GameObject:
@@ -956,20 +962,20 @@ MonoBehaviour:
   phaseSequence:
   - phase: 0
     duration: 4
-    playerTargetYRange: {x: 1, y: 3}
-    obstacleSpawnYRange: {x: 1, y: 3}
-    guidanceText: Inhala y asciende suavemente.
+    playerTargetYRange: {x: 1.45, y: 2.45}
+    obstacleSpawnYRange: {x: 1.45, y: 2.45}
+    guidanceText: Manten Espacio: sube lento.
   - phase: 1
-    duration: 2
-    playerTargetYRange: {x: -0.5, y: 0.5}
-    obstacleSpawnYRange: {x: -1, y: 1}
-    guidanceText: Sosten con estabilidad en el centro.
+    duration: 3
+    playerTargetYRange: {x: 1.45, y: 2.45}
+    obstacleSpawnYRange: {x: 1.45, y: 2.45}
+    guidanceText: Pulsa suave: manten altura.
   - phase: 2
     duration: 4
-    playerTargetYRange: {x: -3, y: -1}
-    obstacleSpawnYRange: {x: -3, y: -1}
-    guidanceText: Exhala y desciende sin prisa.
-  playOnStart: 1
+    playerTargetYRange: {x: -0.55, y: 0.45}
+    obstacleSpawnYRange: {x: -0.55, y: 0.45}
+    guidanceText: Suelta Espacio: baja lento.
+  playOnStart: 0
   sessionCycleCount: 4
 --- !u!114 &1413024513
 MonoBehaviour:

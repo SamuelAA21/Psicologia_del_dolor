@@ -13,17 +13,22 @@ public class PlayerState : MonoBehaviour
 
     private float tiempoSinPresionar = 0f;
 
-    void Start()
+    private void Awake()
     {
         sr = GetComponent<SpriteRenderer>();
         jetpack = GetComponent<PlayerJetpack>();
     }
 
-    void Update()
+    private void Update()
     {
+        if (sr == null || jetpack == null)
+        {
+            return;
+        }
+
         if (jetpack.IsThrusting)
         {
-            sr.sprite = volar;
+            SetSpriteIfAvailable(volar);
             tiempoSinPresionar = 0f;
         }
         else
@@ -32,12 +37,20 @@ public class PlayerState : MonoBehaviour
 
             if (tiempoSinPresionar < tiempoLimite)
             {
-                sr.sprite = transicion;
+                SetSpriteIfAvailable(transicion);
             }
             else
             {
-                sr.sprite = bajar;
+                SetSpriteIfAvailable(bajar);
             }
+        }
+    }
+
+    private void SetSpriteIfAvailable(Sprite sprite)
+    {
+        if (sprite != null)
+        {
+            sr.sprite = sprite;
         }
     }
 }

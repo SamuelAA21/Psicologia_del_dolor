@@ -16,6 +16,9 @@ public class ObstacleSpawner : MonoBehaviour
     [SerializeField, Min(0f)] private float obstacleVerticalSpacing = 0f;
     [SerializeField, Min(0f)] private float corridorPadding = 0.25f;
     [SerializeField] private BreathingController breathingController;
+    [SerializeField] private Transform playerTransform;
+    [SerializeField] private bool compensateObstacleTravelTime = true;
+    [SerializeField, Min(0f)] private float timingPadding = 0.1f;
 
     private float spawnTimer;
 
@@ -27,6 +30,8 @@ public class ObstacleSpawner : MonoBehaviour
         {
             targetCamera = Camera.main;
         }
+
+        ResolvePlayerTransform();
     }
 
     private void Update()
@@ -75,7 +80,7 @@ public class ObstacleSpawner : MonoBehaviour
     {
         if (breathingController != null)
         {
-            return breathingController.GetTherapeuticCenterY();
+            return breathingController.GetTherapeuticCenterY(GetTherapeuticLookAheadSeconds());
         }
 
         Vector2 fallbackRange = GetSortedRange(fallbackSpawnYRange);
@@ -204,5 +209,54 @@ public class ObstacleSpawner : MonoBehaviour
         }
 
         breathingController = FindAnyObjectByType<BreathingController>();
+    }
+
+    private void ResolvePlayerTransform()
+    {
+        if (playerTransform != null)
+        {
+            return;
+        }
+
+        PlayerJetpack player = FindAnyObjectByType<PlayerJetpack>();
+        if (player != null)
+        {
+            playerTransform = player.transform;
+        }
+    }
+
+    private float GetTherapeuticLookAheadSeconds()
+    {
+        if (!compensateObstacleTravelTime)
+        {
+            return 0f;
+        }
+
+        ResolvePlayerTransform();
+
+        if (playerTransform == null)
+        {
+            return timingPadding;
+        }
+
+        float speed = GetObstacleSpeed();
+        if (speed <= 0.01f)
+        {
+            return timingPadding;
+        }
+
+        float distanceToPlayer = Mathf.Abs(GetSpawnXPosition() - playerTransform.position.x);
+        return (distanceToPlayer / speed) + timingPadding;
+    }
+
+    private float GetObstacleSpeed()
+    {
+        if (obstaclePrefab == null)
+        {
+            return 0f;
+        }
+
+        MoveLeft moveLeft = obstaclePrefab.GetComponent<MoveLeft>();
+        return moveLeft != null ? moveLeft.Speed : 5f;
     }
 }

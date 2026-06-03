@@ -54,7 +54,7 @@ public class BreathingTargetZoneVisualizer : MonoBehaviour
             return;
         }
 
-        if (!breathingController.TryGetCurrentPhaseSettings(out BreathingPhaseSettings settings))
+        if (!breathingController.TryGetCurrentPhaseSettings(out _))
         {
             bandRenderer.enabled = false;
             return;
@@ -62,7 +62,7 @@ public class BreathingTargetZoneVisualizer : MonoBehaviour
 
         bandRenderer.enabled = breathingController.IsRunning;
 
-        Vector2 targetRange = settings.GetSortedPlayerTargetRange();
+        Vector2 targetRange = breathingController.GetTherapeuticTargetRange();
         float height = Mathf.Max(0.1f, targetRange.y - targetRange.x);
         float centerY = (targetRange.x + targetRange.y) * 0.5f;
         float width = GetCameraWorldWidth() + horizontalPadding;

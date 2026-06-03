@@ -8,6 +8,7 @@ public class JetpackTherapyHud : MonoBehaviour
 
     [SerializeField] private BreathingController breathingController;
     [SerializeField] private BreathingTherapyGuide therapyGuide;
+    [SerializeField] private string prefabResourcePath = "UI/JetpackTherapyHud";
 
     private Text phaseText;
     private Text instructionText;
@@ -55,7 +56,7 @@ public class JetpackTherapyHud : MonoBehaviour
     {
         ResolveReferences();
 
-        if (breathingController == null)
+        if (breathingController == null || !HasRequiredUiReferences())
         {
             return;
         }
@@ -73,7 +74,7 @@ public class JetpackTherapyHud : MonoBehaviour
         cycleText.text = $"Ciclo {shownCycle}/{totalCycles}";
 
         float score = therapyGuide != null ? therapyGuide.RegulationScore : 0f;
-        scoreText.text = $"{Mathf.RoundToInt(score * 100f)}% regulacion";
+        scoreText.text = $"Ritmo {Mathf.RoundToInt(score * 100f)}%";
 
         if (GameManager.Instance != null)
         {
@@ -81,7 +82,7 @@ public class JetpackTherapyHud : MonoBehaviour
         }
 
         bool inZone = therapyGuide != null && therapyGuide.IsPlayerInTargetZone;
-        statusText.text = inZone ? "En zona" : "Ajusta altura";
+        statusText.text = inZone ? "En zona" : "Sigue la franja";
         statusText.color = inZone ? new Color(0.64f, 1f, 0.74f) : new Color(1f, 0.86f, 0.48f);
         statusDot.color = inZone ? new Color(0.18f, 0.95f, 0.42f) : new Color(1f, 0.65f, 0.18f);
         phaseFill.fillAmount = breathingController.CurrentPhaseProgress;
@@ -106,6 +107,11 @@ public class JetpackTherapyHud : MonoBehaviour
 
     private void BuildUi()
     {
+        if (TryBuildFromPrefab())
+        {
+            return;
+        }
+
         Canvas canvas = gameObject.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 50;
@@ -118,37 +124,37 @@ public class JetpackTherapyHud : MonoBehaviour
             font = Resources.GetBuiltinResource<Font>("Arial.ttf");
         }
 
-        Image panel = CreateImage("Panel", transform, new Color(0.03f, 0.05f, 0.07f, 0.76f));
+        Image panel = CreateImage("Panel", transform, new Color(0.03f, 0.05f, 0.07f, 0.48f));
         RectTransform panelRect = panel.rectTransform;
-        panelRect.anchorMin = new Vector2(0.5f, 1f);
-        panelRect.anchorMax = new Vector2(0.5f, 1f);
-        panelRect.pivot = new Vector2(0.5f, 1f);
-        panelRect.anchoredPosition = new Vector2(0f, -18f);
-        panelRect.sizeDelta = new Vector2(620f, 132f);
+        panelRect.anchorMin = new Vector2(0f, 1f);
+        panelRect.anchorMax = new Vector2(0f, 1f);
+        panelRect.pivot = new Vector2(0f, 1f);
+        panelRect.anchoredPosition = new Vector2(18f, -18f);
+        panelRect.sizeDelta = new Vector2(430f, 104f);
 
-        phaseText = CreateText("Phase", panelRect, font, 28, FontStyle.Bold, TextAnchor.MiddleLeft, Color.white);
+        phaseText = CreateText("Phase", panelRect, font, 22, FontStyle.Bold, TextAnchor.MiddleLeft, Color.white);
         RectTransform phaseRect = phaseText.rectTransform;
         phaseRect.anchorMin = new Vector2(0f, 1f);
         phaseRect.anchorMax = new Vector2(0f, 1f);
         phaseRect.pivot = new Vector2(0f, 1f);
-        phaseRect.anchoredPosition = new Vector2(24f, -16f);
-        phaseRect.sizeDelta = new Vector2(280f, 36f);
+        phaseRect.anchoredPosition = new Vector2(16f, -10f);
+        phaseRect.sizeDelta = new Vector2(170f, 28f);
 
-        instructionText = CreateText("Instruction", panelRect, font, 19, FontStyle.Normal, TextAnchor.MiddleLeft, new Color(0.93f, 0.97f, 1f));
+        instructionText = CreateText("Instruction", panelRect, font, 15, FontStyle.Normal, TextAnchor.MiddleLeft, new Color(0.93f, 0.97f, 1f));
         RectTransform instructionRect = instructionText.rectTransform;
         instructionRect.anchorMin = new Vector2(0f, 1f);
-        instructionRect.anchorMax = new Vector2(1f, 1f);
-        instructionRect.pivot = new Vector2(0.5f, 1f);
-        instructionRect.anchoredPosition = new Vector2(0f, -52f);
-        instructionRect.sizeDelta = new Vector2(-48f, 30f);
+        instructionRect.anchorMax = new Vector2(0f, 1f);
+        instructionRect.pivot = new Vector2(0f, 1f);
+        instructionRect.anchoredPosition = new Vector2(16f, -38f);
+        instructionRect.sizeDelta = new Vector2(265f, 24f);
 
         Image barBack = CreateImage("PhaseProgressBack", panelRect, new Color(1f, 1f, 1f, 0.18f));
         RectTransform barBackRect = barBack.rectTransform;
         barBackRect.anchorMin = new Vector2(0f, 0f);
         barBackRect.anchorMax = new Vector2(1f, 0f);
         barBackRect.pivot = new Vector2(0.5f, 0f);
-        barBackRect.anchoredPosition = new Vector2(0f, 18f);
-        barBackRect.sizeDelta = new Vector2(-48f, 12f);
+        barBackRect.anchoredPosition = new Vector2(0f, 12f);
+        barBackRect.sizeDelta = new Vector2(-32f, 8f);
 
         phaseFill = CreateImage("PhaseProgressFill", barBackRect, new Color(0.38f, 0.84f, 1f, 0.95f));
         phaseFill.type = Image.Type.Filled;
@@ -160,45 +166,104 @@ public class JetpackTherapyHud : MonoBehaviour
         fillRect.offsetMin = Vector2.zero;
         fillRect.offsetMax = Vector2.zero;
 
-        cycleText = CreateText("Cycle", panelRect, font, 16, FontStyle.Bold, TextAnchor.MiddleRight, Color.white);
+        cycleText = CreateText("Cycle", panelRect, font, 14, FontStyle.Bold, TextAnchor.MiddleRight, Color.white);
         RectTransform cycleRect = cycleText.rectTransform;
         cycleRect.anchorMin = new Vector2(1f, 1f);
         cycleRect.anchorMax = new Vector2(1f, 1f);
         cycleRect.pivot = new Vector2(1f, 1f);
-        cycleRect.anchoredPosition = new Vector2(-24f, -18f);
-        cycleRect.sizeDelta = new Vector2(160f, 24f);
+        cycleRect.anchoredPosition = new Vector2(-16f, -12f);
+        cycleRect.sizeDelta = new Vector2(120f, 22f);
 
-        scoreText = CreateText("Score", panelRect, font, 15, FontStyle.Normal, TextAnchor.MiddleRight, new Color(0.78f, 0.9f, 1f));
+        scoreText = CreateText("Score", panelRect, font, 12, FontStyle.Normal, TextAnchor.MiddleRight, new Color(0.78f, 0.9f, 1f));
         RectTransform scoreRect = scoreText.rectTransform;
         scoreRect.anchorMin = new Vector2(1f, 1f);
         scoreRect.anchorMax = new Vector2(1f, 1f);
         scoreRect.pivot = new Vector2(1f, 1f);
-        scoreRect.anchoredPosition = new Vector2(-24f, -42f);
-        scoreRect.sizeDelta = new Vector2(170f, 22f);
+        scoreRect.anchoredPosition = new Vector2(-16f, -34f);
+        scoreRect.sizeDelta = new Vector2(120f, 18f);
 
-        livesText = CreateText("Lives", panelRect, font, 15, FontStyle.Bold, TextAnchor.MiddleRight, new Color(1f, 0.74f, 0.58f));
+        livesText = CreateText("Lives", panelRect, font, 12, FontStyle.Bold, TextAnchor.MiddleRight, new Color(1f, 0.74f, 0.58f));
         RectTransform livesRect = livesText.rectTransform;
         livesRect.anchorMin = new Vector2(1f, 1f);
         livesRect.anchorMax = new Vector2(1f, 1f);
         livesRect.pivot = new Vector2(1f, 1f);
-        livesRect.anchoredPosition = new Vector2(-24f, -66f);
-        livesRect.sizeDelta = new Vector2(170f, 22f);
+        livesRect.anchoredPosition = new Vector2(-16f, -56f);
+        livesRect.sizeDelta = new Vector2(120f, 18f);
 
         statusDot = CreateImage("StatusDot", panelRect, Color.white);
         RectTransform dotRect = statusDot.rectTransform;
         dotRect.anchorMin = new Vector2(1f, 0f);
         dotRect.anchorMax = new Vector2(1f, 0f);
         dotRect.pivot = new Vector2(1f, 0f);
-        dotRect.anchoredPosition = new Vector2(-130f, 43f);
-        dotRect.sizeDelta = new Vector2(12f, 12f);
+        dotRect.anchoredPosition = new Vector2(-121f, 22f);
+        dotRect.sizeDelta = new Vector2(8f, 8f);
 
-        statusText = CreateText("Status", panelRect, font, 15, FontStyle.Bold, TextAnchor.MiddleLeft, Color.white);
+        statusText = CreateText("Status", panelRect, font, 12, FontStyle.Bold, TextAnchor.MiddleLeft, Color.white);
         RectTransform statusRect = statusText.rectTransform;
         statusRect.anchorMin = new Vector2(1f, 0f);
         statusRect.anchorMax = new Vector2(1f, 0f);
         statusRect.pivot = new Vector2(1f, 0f);
-        statusRect.anchoredPosition = new Vector2(-24f, 36f);
-        statusRect.sizeDelta = new Vector2(96f, 24f);
+        statusRect.anchoredPosition = new Vector2(-16f, 14f);
+        statusRect.sizeDelta = new Vector2(105f, 18f);
+    }
+
+    private bool TryBuildFromPrefab()
+    {
+        if (string.IsNullOrWhiteSpace(prefabResourcePath))
+        {
+            return false;
+        }
+
+        GameObject prefab = Resources.Load<GameObject>(prefabResourcePath);
+        if (prefab == null)
+        {
+            return false;
+        }
+
+        GameObject instance = Instantiate(prefab, transform, false);
+        instance.name = prefab.name;
+
+        phaseText = FindChildComponent<Text>(instance.transform, "Phase");
+        instructionText = FindChildComponent<Text>(instance.transform, "Instruction");
+        cycleText = FindChildComponent<Text>(instance.transform, "Cycle");
+        scoreText = FindChildComponent<Text>(instance.transform, "Score");
+        statusText = FindChildComponent<Text>(instance.transform, "Status");
+        livesText = FindChildComponent<Text>(instance.transform, "Lives");
+        phaseFill = FindChildComponent<Image>(instance.transform, "PhaseProgressFill");
+        statusDot = FindChildComponent<Image>(instance.transform, "StatusDot");
+
+        if (HasRequiredUiReferences())
+        {
+            return true;
+        }
+
+        Destroy(instance);
+        ClearUiReferences();
+        return false;
+    }
+
+    private bool HasRequiredUiReferences()
+    {
+        return phaseText != null
+            && instructionText != null
+            && cycleText != null
+            && scoreText != null
+            && statusText != null
+            && livesText != null
+            && phaseFill != null
+            && statusDot != null;
+    }
+
+    private void ClearUiReferences()
+    {
+        phaseText = null;
+        instructionText = null;
+        cycleText = null;
+        scoreText = null;
+        statusText = null;
+        livesText = null;
+        phaseFill = null;
+        statusDot = null;
     }
 
     private static Image CreateImage(string objectName, Transform parent, Color color)
@@ -223,6 +288,19 @@ public class JetpackTherapyHud : MonoBehaviour
         text.horizontalOverflow = HorizontalWrapMode.Wrap;
         text.verticalOverflow = VerticalWrapMode.Truncate;
         return text;
+    }
+
+    private static T FindChildComponent<T>(Transform root, string objectName) where T : Component
+    {
+        foreach (T component in root.GetComponentsInChildren<T>(true))
+        {
+            if (component.name == objectName)
+            {
+                return component;
+            }
+        }
+
+        return null;
     }
 
     private static string GetPhaseLabel(BreathPhase phase)

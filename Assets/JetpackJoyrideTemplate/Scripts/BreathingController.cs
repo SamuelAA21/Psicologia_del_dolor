@@ -41,25 +41,25 @@ public class BreathingController : MonoBehaviour
         {
             phase = BreathPhase.Inhale,
             duration = 4f,
-            playerTargetYRange = new Vector2(2.25f, 3.25f),
-            obstacleSpawnYRange = new Vector2(2.25f, 3.25f),
-            guidanceText = "Inhala y asciende suavemente."
+            playerTargetYRange = new Vector2(1.45f, 2.45f),
+            obstacleSpawnYRange = new Vector2(1.45f, 2.45f),
+            guidanceText = "Manten Espacio: sube lento."
         },
         new BreathingPhaseSettings
         {
             phase = BreathPhase.Hold,
-            duration = 7f,
-            playerTargetYRange = new Vector2(2.25f, 3.25f),
-            obstacleSpawnYRange = new Vector2(2.25f, 3.25f),
-            guidanceText = "Sosten con estabilidad en el centro."
+            duration = 3f,
+            playerTargetYRange = new Vector2(1.45f, 2.45f),
+            obstacleSpawnYRange = new Vector2(1.45f, 2.45f),
+            guidanceText = "Pulsa suave: manten altura."
         },
         new BreathingPhaseSettings
         {
             phase = BreathPhase.Exhale,
-            duration = 8f,
-            playerTargetYRange = new Vector2(0f, 1f),
-            obstacleSpawnYRange = new Vector2(0f, 1f),
-            guidanceText = "Exhala y desciende sin prisa."
+            duration = 4f,
+            playerTargetYRange = new Vector2(-0.55f, 0.45f),
+            obstacleSpawnYRange = new Vector2(-0.55f, 0.45f),
+            guidanceText = "Suelta Espacio: baja lento."
         }
     };
 
@@ -157,32 +157,82 @@ public class BreathingController : MonoBehaviour
 
     public float GetTherapeuticCenterY()
     {
-        if (!TryGetCurrentPhaseSettings(out BreathingPhaseSettings currentSettings))
+        return GetTherapeuticCenterY(0f);
+    }
+
+    public float GetTherapeuticCenterY(float timeOffsetSeconds)
+    {
+        return TryEvaluateAtOffset(timeOffsetSeconds, out _, out float centerY)
+            ? centerY
+            : 0f;
+    }
+
+    public Vector2 GetTherapeuticTargetRange(float timeOffsetSeconds = 0f)
+    {
+        if (!TryEvaluateAtOffset(timeOffsetSeconds, out BreathingPhaseSettings settings, out float centerY))
         {
-            return 0f;
+            return Vector2.zero;
         }
 
-        return EvaluatePhaseCenter(currentSettings, CurrentPhaseProgress);
+        Vector2 configuredRange = settings.GetSortedPlayerTargetRange();
+        float halfHeight = Mathf.Max(0.35f, (configuredRange.y - configuredRange.x) * 0.5f);
+        return new Vector2(centerY - halfHeight, centerY + halfHeight);
+    }
+
+    private bool TryEvaluateAtOffset(float timeOffsetSeconds, out BreathingPhaseSettings settings, out float centerY)
+    {
+        settings = null;
+        centerY = 0f;
+
+        if (!TryGetCurrentPhaseSettings(out _))
+        {
+            return false;
+        }
+
+        int phaseIndex = currentPhaseIndex;
+        float simulatedTimer = phaseTimer + Mathf.Max(0f, timeOffsetSeconds);
+        float simulatedEntryCenter = phaseEntryCenterY;
+        int guard = 0;
+        int maxIterations = Mathf.Max(phaseSequence.Length * Mathf.Max(1, sessionCycleCount + 1), phaseSequence.Length + 1);
+
+        while (guard < maxIterations && simulatedTimer >= phaseSequence[phaseIndex].duration)
+        {
+            BreathingPhaseSettings phaseSettings = phaseSequence[phaseIndex];
+            simulatedTimer -= phaseSettings.duration;
+            simulatedEntryCenter = EvaluatePhaseCenter(phaseSettings, 1f, simulatedEntryCenter);
+            phaseIndex = (phaseIndex + 1) % phaseSequence.Length;
+            guard++;
+        }
+
+        settings = phaseSequence[phaseIndex];
+        float progress = settings.duration <= 0f ? 1f : Mathf.Clamp01(simulatedTimer / settings.duration);
+        centerY = EvaluatePhaseCenter(settings, progress, simulatedEntryCenter);
+        return true;
     }
 
     private float EvaluatePhaseCenter(BreathingPhaseSettings currentSettings, float progress)
     {
+        return EvaluatePhaseCenter(currentSettings, progress, phaseEntryCenterY);
+    }
+
+    private float EvaluatePhaseCenter(BreathingPhaseSettings currentSettings, float progress, float entryCenterY)
+    {
         float currentCenter = GetRangeCenter(currentSettings.GetSortedPlayerTargetRange());
 
-        switch (CurrentPhase)
+        switch (currentSettings.phase)
         {
             case BreathPhase.Inhale:
                 return Mathf.Lerp(
-                    phaseEntryCenterY,
+                    entryCenterY,
                     currentCenter,
                     EaseInhale(progress));
 
             case BreathPhase.Hold:
-                return phaseEntryCenterY;
+                return entryCenterY;
 
             case BreathPhase.Exhale:
                 return Mathf.Lerp(
-                    phaseEntryCenterY,
+                    entryCenterY,
                     currentCenter,
                     EaseExhale(progress));
 
@@ -249,25 +299,25 @@ public class BreathingController : MonoBehaviour
             {
                 phase = BreathPhase.Inhale,
                 duration = 4f,
-                playerTargetYRange = new Vector2(2.25f, 3.25f),
-                obstacleSpawnYRange = new Vector2(2.25f, 3.25f),
-                guidanceText = "Inhala y asciende suavemente."
+                playerTargetYRange = new Vector2(1.45f, 2.45f),
+                obstacleSpawnYRange = new Vector2(1.45f, 2.45f),
+                guidanceText = "Manten Espacio: sube lento."
             },
             new BreathingPhaseSettings
             {
                 phase = BreathPhase.Hold,
-                duration = 7f,
-                playerTargetYRange = new Vector2(2.25f, 3.25f),
-                obstacleSpawnYRange = new Vector2(2.25f, 3.25f),
-                guidanceText = "Sosten con estabilidad en el centro."
+                duration = 3f,
+                playerTargetYRange = new Vector2(1.45f, 2.45f),
+                obstacleSpawnYRange = new Vector2(1.45f, 2.45f),
+                guidanceText = "Pulsa suave: manten altura."
             },
             new BreathingPhaseSettings
             {
                 phase = BreathPhase.Exhale,
-                duration = 8f,
-                playerTargetYRange = new Vector2(0f, 1f),
-                obstacleSpawnYRange = new Vector2(0f, 1f),
-                guidanceText = "Exhala y desciende sin prisa."
+                duration = 4f,
+                playerTargetYRange = new Vector2(-0.55f, 0.45f),
+                obstacleSpawnYRange = new Vector2(-0.55f, 0.45f),
+                guidanceText = "Suelta Espacio: baja lento."
             }
         };
     }

@@ -4,12 +4,17 @@ using UnityEngine.InputSystem;
 public class PlayerJetpack : MonoBehaviour
 {
     [SerializeField] private float thrustVelocity = 8f;
+    [SerializeField] private float descentVelocity = -8f;
     [SerializeField] private float maxFallSpeed = -6f;
+    [SerializeField] private bool useControlledGravity = true;
+    [SerializeField] private float controlledGravityScale = 0f;
     [SerializeField] private InputActionReference thrustAction;
     [SerializeField] private Key fallbackKeyboardKey = Key.Space;
 
     private Rigidbody2D rb;
     private bool isThrusting;
+    private float originalGravityScale;
+
     public bool IsThrusting => isThrusting;
 
 
@@ -20,6 +25,14 @@ public class PlayerJetpack : MonoBehaviour
         if (rb == null)
         {
             Debug.LogError($"{nameof(PlayerJetpack)} requires a {nameof(Rigidbody2D)} on {name}.");
+            return;
+        }
+
+        originalGravityScale = rb.gravityScale;
+
+        if (useControlledGravity)
+        {
+            rb.gravityScale = controlledGravityScale;
         }
     }
 
@@ -31,6 +44,11 @@ public class PlayerJetpack : MonoBehaviour
     private void OnDisable()
     {
         thrustAction?.action?.Disable();
+
+        if (rb != null && useControlledGravity)
+        {
+            rb.gravityScale = originalGravityScale;
+        }
     }
 
     private void Update()
@@ -45,10 +63,8 @@ public class PlayerJetpack : MonoBehaviour
             return;
         }
 
-        if (isThrusting)
-        {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, thrustVelocity);
-        }
+        float targetVerticalVelocity = isThrusting ? thrustVelocity : descentVelocity;
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, targetVerticalVelocity);
 
         ClampFallSpeed();
     }

@@ -219,15 +219,24 @@ public class GameAudioManager : MonoBehaviour
 
     private void PlayMusic(AudioClip clip, bool loop)
     {
-        if (musicSource == null || clip == null || musicSource.clip == clip)
+        if (musicSource == null || clip == null)
         {
             return;
         }
 
+        bool clipChanged = musicSource.clip != clip;
+        if (clipChanged)
+        {
+            musicSource.clip = clip;
+        }
+
         musicSource.loop = loop;
-        musicSource.clip = clip;
         musicSource.volume = musicVolume * masterVolume;
-        musicSource.Play();
+
+        if (clipChanged || !musicSource.isPlaying)
+        {
+            musicSource.Play();
+        }
     }
 
     private void PlayOneShot(AudioSource source, AudioClip clip, float volume)

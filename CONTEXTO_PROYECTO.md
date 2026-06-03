@@ -46,7 +46,8 @@ Bootstrap
   -> exploracion/dialogos/puertas/progreso
   -> MiniGameBridge o SceneLoader
   -> FirstMiniGame
-  -> completar respiracion o fallar
+  -> completar respiracion
+  -> pantalla final editable del minijuego
   -> SampleScene
 ```
 
@@ -150,15 +151,22 @@ Sistemas:
 - `PlayerCollision`: registra errores por choque.
 - `GameManager`: controla estado, intentos y retorno a `SampleScene`.
 - `MiniGameFlowController`: escucha victoria y reporta progreso.
+- `JetpackPreGameOverlay`: pantalla previa con instrucciones y boton `PLAY`.
 - `JetpackTherapyHud`: HUD automatico del minijuego.
+- `JetpackCompletionOverlay`: pantalla final al completar los 4 ciclos, con resumen y recompensas.
 - `BreathingTargetZoneVisualizer`: franja visual de zona correcta.
+- `ObstacleSpawner` compensa el tiempo de viaje del obstaculo para abrir el corredor donde el jugador estara cuando ese obstaculo llegue.
+- Las interfaces del minijuego se pueden editar como prefabs en `Assets/Resources/UI`.
 
 Estado importante:
 
 - El minijuego ya no debe fallar al primer choque. `GameManager` maneja intentos, por defecto `3`.
 - Tras un golpe, `PlayerCollision` da invulnerabilidad breve y feedback visual.
 - `ObstacleSpawner` intenta usar el `BreathingController` expuesto por `MiniGameFlowController` para evitar referencias equivocadas.
-- La escena todavia puede tener mas de un `BreathingController`; lo ideal a futuro es limpiar la escena y dejar uno solo.
+- La escena conserva un `BreathingController` duplicado en `Spawner`, pero esta desactivado y no arranca. El controlador activo es el del `GameManager`.
+- La calibracion actual busca un patron terapeutico: mantener Espacio para inhalar/subir, pulsar suave para sostener, soltar para exhalar/bajar.
+- El minijuego inicia congelado con pantalla previa; el ciclo de respiracion arranca al pulsar `PLAY`.
+- Al completar los 4 ciclos, el juego muestra una pantalla de finalizacion antes de volver a `SampleScene`.
 
 ## 3.1 Objetos reales y arquitectura de escenas
 
@@ -323,7 +331,7 @@ Componentes del `Player`:
 - `Player2D`.
 - `PlayerJetpack`.
 - `PlayerCollision`.
-- `PlayerState` desde `Animation.cs`.
+- `PlayerState`.
 - Sprites de ascenso/normal/descenso.
 
 Componentes de `BreathingTherapyGuide`:
@@ -339,8 +347,12 @@ Componentes del `Spawner`:
 
 - `ObstacleSpawner`
   - `obstaclePrefab`: `Assets/JetpackJoyrideTemplate/Prefab/Obstacle.prefab`
-  - `breathingController`: no asignado en escena, se resuelve en runtime.
-- Puede tener otro `BreathingController`, por eso se considera deuda tecnica.
+  - `breathingController`: asignado al `BreathingController` del `GameManager`.
+  - `playerTransform`: asignado al jugador.
+  - `compensateObstacleTravelTime: true`.
+  - `spawnInterval: 0.45`.
+  - `corridorHeight: 2.8`.
+- El `Spawner` conserva otro `BreathingController` desactivado por compatibilidad de escena; no debe usarse como fuente de verdad.
 
 Componentes del `GameManager`:
 
@@ -349,24 +361,64 @@ Componentes del `GameManager`:
   - `maxMistakes: 3` por defecto en script.
 - `BreathingController`
   - Secuencia respiratoria serializada.
-  - `playOnStart: true`.
+  - `playOnStart: false`; `JetpackPreGameOverlay` inicia el ciclo al pulsar `PLAY`.
+  - Inhala: `4s`, rango alto `1.45..2.45`, instruccion `Manten Espacio: sube lento.`
+  - Sosten: `3s`, rango alto `1.45..2.45`, instruccion `Pulsa suave: manten altura.`
+  - Exhala: `4s`, rango bajo `-0.55..0.45`, instruccion `Suelta Espacio: baja lento.`
 - `MiniGameFlowController`
   - `returnSceneName: SampleScene`.
   - Expone `Controller` para que otros sistemas usen el mismo controlador.
 
 Objetos/sistemas auto-instalados al cargar la escena:
 
+- `JetpackPreGameOverlay`.
 - `JetpackTherapyHud`.
+- `JetpackCompletionOverlay`.
 - `BreathingTargetZoneVisualizer`.
+
+Prefabs editables esperados:
+
+```text
+Assets/Resources/UI/JetpackPreGameOverlay.prefab
+Assets/Resources/UI/JetpackTherapyHud.prefab
+Assets/Resources/UI/JetpackCompletionOverlay.prefab
+```
+
+Nombres criticos dentro de `JetpackCompletionOverlay.prefab`:
+
+```text
+ContinueButton
+Summary
+Rewards
+```
+
+Estos objetos pueden moverse, redisenarse o cambiar su contenido visual, pero no deben renombrarse porque el script los busca por nombre para conectar el boton y actualizar los textos.
+
+Si no existen, Unity los crea automaticamente mediante:
+
+```text
+Assets/Editor/JetpackUiPrefabCreator.cs
+```
+
+Tambien pueden regenerarse desde el menu:
+
+```text
+Tools/Psicologia del Dolor/Regenerar UI Jetpack editable
+```
 
 Arquitectura:
 
 - `BreathingController` es el reloj del minijuego.
+- `BreathingController.GetTherapeuticCenterY(offset)` permite predecir la posicion futura de la trayectoria respiratoria.
 - `BreathingTherapyGuide` interpreta si el jugador esta cumpliendo la fase actual.
 - `ObstacleSpawner` genera obstaculos dejando un corredor alrededor de la zona terapeutica.
+- `ObstacleSpawner` usa la velocidad del prefab `MoveLeft` y la distancia al jugador para compensar el retraso entre spawn y llegada.
 - `GameManager` decide si se puede jugar, cuantos errores quedan y cuando se pierde.
 - `MiniGameFlowController` decide la victoria y reporta el resultado al capitulo 1.
+- `JetpackPreGameOverlay` congela el minijuego al entrar, muestra instrucciones y arranca `BreathingController.StartCycle()` al pulsar `PLAY`.
 - `JetpackTherapyHud` transforma el estado interno en feedback legible.
+- `JetpackCompletionOverlay` congela la escena al terminar, explica la practica completada, muestra objetos/avances conseguidos y solo vuelve a `SampleScene` al pulsar `CONTINUAR`.
+- `JetpackPreGameOverlay`, `JetpackTherapyHud` y `JetpackCompletionOverlay` intentan cargar primero sus prefabs desde `Resources/UI`; si no existen, construyen una UI fallback por codigo.
 - `BreathingTargetZoneVisualizer` transforma el rango objetivo en una franja visual del mundo.
 
 ## 3.2 Arquitectura tecnica por capas
@@ -413,6 +465,7 @@ Minijuego 2D
   BreathingController
   BreathingTherapyGuide
   PlayerJetpack
+  MoveLeft
   ObstacleSpawner
   GameManager
   MiniGameFlowController
@@ -636,7 +689,7 @@ Assets/Scripts/Dialogue/StoryLvl.yarnproject
 
 Sistemas relacionados:
 
-- `YarnSceneComands.cs`: comando `load_scene`.
+- `YarnSceneCommands.cs`: comando `load_scene`.
 - `MiniGameBridge.cs`: comando `iniciar_respiracion`.
 - `DialogueInputController.cs`: mouse/Enter para avanzar o seleccionar.
 - `DialoguePlayerControlLock.cs`: bloquea control del jugador durante dialogos.
@@ -762,8 +815,8 @@ HUD:
 - Instruccion terapeutica.
 - Progreso de fase.
 - Ciclo actual.
-- Porcentaje de regulacion.
-- Estado "En zona" o "Ajusta altura".
+- Porcentaje de ritmo/regulacion.
+- Estado "En zona" o "Sigue la franja".
 - Intentos restantes.
 
 Visualizacion:
@@ -921,9 +974,9 @@ Dependencias destacadas:
 
 ## 14. Riesgos y deuda tecnica
 
-1. `FirstMiniGame` puede tener multiples `BreathingController`.
-   - Ya se mitigaron referencias desde `MiniGameFlowController` y `ObstacleSpawner`.
-   - Ideal: limpiar escena y dejar una sola instancia.
+1. `FirstMiniGame` conserva un `BreathingController` duplicado desactivado.
+   - El flujo activo usa el controlador del `GameManager`.
+   - Ideal: eliminar el componente duplicado desde Unity cuando se valide la escena en editor.
 
 2. El jugador 2D puede tener dos controladores verticales.
    - `Player2D` y `PlayerJetpack` pueden competir.
@@ -932,17 +985,10 @@ Dependencias destacadas:
 3. `SampleScene` sigue con nombre generico.
    - Ideal: renombrar a `MainWorld`, `Chapter1Scene` o similar cuando el flujo este estable.
 
-4. `YarnSceneComands.cs` tiene typo en nombre de archivo.
-   - Clase correcta: `YarnSceneCommands`.
-   - Ideal: renombrar archivo con cuidado.
-
-5. `Animation.cs` contiene clase `PlayerState`.
-   - Ideal: renombrar a `PlayerState.cs` si Unity conserva referencias.
-
-6. No hay tests automatizados propios.
+4. No hay tests automatizados propios.
    - Recomendado: PlayMode tests para `BreathingController`, `SceneLoader`, `GameAudioManager` y progreso del capitulo.
 
-7. Hay muchos sistemas auto-instalables.
+5. Hay muchos sistemas auto-instalables.
    - Son utiles para avanzar rapido, pero a futuro conviene pasar configuraciones criticas a prefabs/escenas claras.
 
 ## 15. Donde tocar segun la peticion
@@ -962,7 +1008,9 @@ Dependencias destacadas:
 | Jugador 3D | `Assets/Scripts/Player/PlayerController.cs` |
 | Lobo/NPC | `Assets/Scripts/NPC/Wolf/PetFollowController.cs` |
 | Minijuego respiracion | `Assets/Scenes/FirstMiniGame.unity`, `Assets/JetpackJoyrideTemplate/Scripts`, `Assets/Scripts/MiniGames` |
-| HUD minijuego | `Assets/Scripts/MiniGames/JetPackJoyride/JetpackTherapyHud.cs` |
+| UI editable minijuego | `Assets/Resources/UI/JetpackPreGameOverlay.prefab`, `Assets/Resources/UI/JetpackTherapyHud.prefab`, `Assets/Resources/UI/JetpackCompletionOverlay.prefab` |
+| HUD minijuego | `Assets/Resources/UI/JetpackTherapyHud.prefab`, `Assets/Scripts/MiniGames/JetPackJoyride/JetpackTherapyHud.cs` |
+| Finalizacion minijuego | `Assets/Resources/UI/JetpackCompletionOverlay.prefab`, `Assets/Scripts/MiniGames/JetPackJoyride/JetpackCompletionOverlay.cs` |
 | Zona objetivo minijuego | `Assets/Scripts/MiniGames/JetPackJoyride/BreathingTargetZoneVisualizer.cs` |
 
 ## 16. Comandos utiles

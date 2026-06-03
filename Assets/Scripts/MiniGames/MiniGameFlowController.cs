@@ -5,6 +5,8 @@ public class MiniGameFlowController : MonoBehaviour
     [SerializeField] private BreathingController controller;
     [SerializeField] private string returnSceneName = "SampleScene";
 
+    private bool completed;
+
     public BreathingController Controller
     {
         get
@@ -21,7 +23,10 @@ public class MiniGameFlowController : MonoBehaviour
         if (controller != null)
         {
             controller.SessionCompleted += OnWin;
+            return;
         }
+
+        Debug.LogWarning($"{nameof(MiniGameFlowController)} could not find a {nameof(BreathingController)} in the scene.", this);
     }
 
     private void OnDestroy()
@@ -34,7 +39,25 @@ public class MiniGameFlowController : MonoBehaviour
 
     private void OnWin()
     {
+        if (completed)
+        {
+            return;
+        }
+
+        completed = true;
         Chapter1ProgressState.ReportBreathingCompleted();
+
+        if (JetpackCompletionOverlay.Instance != null)
+        {
+            JetpackCompletionOverlay.Instance.ShowCompletion(ReturnToScene);
+            return;
+        }
+
+        ReturnToScene();
+    }
+
+    private void ReturnToScene()
+    {
         SceneLoader.LoadSceneSafe(returnSceneName);
     }
 
