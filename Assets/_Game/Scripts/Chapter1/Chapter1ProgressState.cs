@@ -17,6 +17,7 @@ public static class Chapter1ProgressState
 
     public static bool HasCompass { get; private set; }
     public static bool BreathingCompleted { get; private set; }
+    public static bool UnderstandApplyCompleted { get; private set; }
     public static bool PendingDoor1BreathingChallenge => pendingDoor1BreathingChallenge;
 
     public static void MarkCompassObtained()
@@ -33,6 +34,11 @@ public static class Chapter1ProgressState
     public static void ReportBreathingFailed()
     {
         pendingMiniGameResult = Chapter1MiniGameResult.Failed;
+    }
+
+    public static void ReportUnderstandApplyCompleted()
+    {
+        UnderstandApplyCompleted = true;
     }
 
     public static void BeginDoor1BreathingChallenge()

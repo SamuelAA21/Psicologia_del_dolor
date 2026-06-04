@@ -66,12 +66,12 @@ Avatar Clínico: Comprender una frase no basta si no cambia conducta, movimiento
     Jugador: Sí, suena lógico.
     Avatar Clínico: Has comprendido la frase, pero no has cruzado el puente. Sin acción, el entorno no cambia.
     <<set $comprension_superficial += 1>>
-    <<chapter1_unlock "Puerta3">>
+    <<chapter1_start_understand_apply>>
 -> Quiero probarlo en mi vida real.
     Jugador: Quiero probarlo en mi vida real.
     Avatar Clínico: Ahora sí. Cuando decides aplicar, el conocimiento deja de ser eco y se convierte en herramienta.
     <<set $aplicacion += 1>>
-    <<chapter1_unlock "Puerta3">>
+    <<chapter1_start_understand_apply>>
 ===
 
 title: Puerta3

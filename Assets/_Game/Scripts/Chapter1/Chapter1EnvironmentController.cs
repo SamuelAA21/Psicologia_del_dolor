@@ -10,6 +10,7 @@ public class Chapter1EnvironmentController : MonoBehaviour
     private const string DefaultInitialStage = "Puerta1";
     private const string Door1InitialNode = "Puerta1";
     private const string Door1PostBreathingNode = "Puerta1_PostRespiracion";
+    private const string UnderstandApplyDeckResourcePath = "MiniGames/UnderstandApply/Chapter1UnderstandApplyDeck";
 
     [Header("Personajes")]
     [SerializeField] private GameObject avatarClinico;
@@ -162,6 +163,12 @@ public class Chapter1EnvironmentController : MonoBehaviour
     public static void StartDoor1BreathingFromYarn()
     {
         Instance?.StartDoor1BreathingChallenge();
+    }
+
+    [YarnCommand("chapter1_start_understand_apply")]
+    public static void StartUnderstandApplyFromYarn()
+    {
+        Instance?.StartUnderstandApplyChallenge();
     }
 
     public void SetStage(string stageName)
@@ -847,6 +854,18 @@ public class Chapter1EnvironmentController : MonoBehaviour
 
         Chapter1ProgressState.BeginDoor1BreathingChallenge();
         SceneLoader.LoadSceneSafe(GameSceneNames.BreathingMiniGame);
+    }
+
+    private void StartUnderstandApplyChallenge()
+    {
+        UnderstandApplyDeck deck = Resources.Load<UnderstandApplyDeck>(UnderstandApplyDeckResourcePath);
+        UnderstandApplyMiniGame.StartGame(deck, CompleteUnderstandApplyChallenge);
+    }
+
+    private void CompleteUnderstandApplyChallenge()
+    {
+        Chapter1ProgressState.ReportUnderstandApplyCompleted();
+        UnlockStage("Puerta3");
     }
 
     private void ConfigureDoor1DialogueNode()
