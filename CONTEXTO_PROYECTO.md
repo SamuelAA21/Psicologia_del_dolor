@@ -934,15 +934,18 @@ Assets/_Game/Scripts/NPC/Wolf/PetController.controller
 
 Responsabilidad:
 
-- Seguimiento del lobo con NavMesh.
+- Seguimiento del lobo con `NavMeshAgent` por defecto.
+- `useNavMeshForFollow` debe estar activo para que respete terreno y obstaculos.
+- `directFollowFallback` debe quedar desactivado en el mapa principal para evitar que atraviese geometria.
 - Estados idle/follow/sit/route.
 - Ejecucion de rutas por pasos.
 - Integracion con variables Yarn.
 
 Validar al tocar:
 
-- NavMesh bakeado.
+- NavMesh bakeado y conectado.
 - `NavMeshAgent` presente.
+- `directFollowFallback` desactivado en `SampleScene` para evitar movimiento fantasma atravesando el mapa.
 - Referencia al jugador.
 - Parametros animator: `IsWalking`, `Sitting`, `Speed`.
 

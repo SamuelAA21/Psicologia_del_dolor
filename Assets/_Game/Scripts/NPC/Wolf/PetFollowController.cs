@@ -26,11 +26,15 @@ public class PetFollowController : MonoBehaviour
 
     [Header("Seguimiento")]
     [SerializeField] private float stopDistance = 1.5f;
-    [SerializeField] private float followStartDistance = 3f;
+    [SerializeField] private float followStartDistance = 1.8f;
     [SerializeField] private float runDistance = 6f;
     [SerializeField] private float walkSpeed = 2.5f;
     [SerializeField] private float runSpeed = 5f;
     [SerializeField] private float idleBeforeSitTime = 5f;
+    [SerializeField] private bool useNavMeshForFollow;
+    [SerializeField] private bool directFollowFallback = true;
+    [SerializeField] private float navMeshSampleRadius = 4f;
+    [SerializeField] private float directRotationSpeed = 540f;
 
     [Header("Parametros del Animator")]
     [SerializeField] private string speedParam = "Speed";
@@ -58,6 +62,7 @@ public class PetFollowController : MonoBehaviour
     private InMemoryVariableStorage yarnStorage;
     private PetState currentState = PetState.Idle;
     private bool isRunningRoute;
+    private bool navMeshWarningShown;
     private float idleTimer;
     private readonly HashSet<string> executedStepIds = new HashSet<string>(StringComparer.Ordinal);
 
@@ -75,8 +80,15 @@ public class PetFollowController : MonoBehaviour
         {
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player != null) playerTarget = player.transform;
-            else Debug.LogWarning("[PetFollowController] No se encontro un GameObject con tag 'Player'.", this);
+            else
+            {
+                PlayerController playerController = FindAnyObjectByType<PlayerController>();
+                if (playerController != null) playerTarget = playerController.transform;
+                else Debug.LogWarning("[PetFollowController] No se encontro jugador por tag 'Player' ni por PlayerController.", this);
+            }
         }
+
+        TryPlaceAgentOnNavMesh();
     }
 
     private void Start()
@@ -117,7 +129,11 @@ public class PetFollowController : MonoBehaviour
     {
         if (distance <= stopDistance)
         {
-            agent.ResetPath();
+            if (agent.isOnNavMesh)
+            {
+                agent.ResetPath();
+            }
+
             SetState(PetState.Idle);
             idleTimer = 0f;
             if (!string.IsNullOrWhiteSpace(greetTrigger))
@@ -125,10 +141,10 @@ public class PetFollowController : MonoBehaviour
             return;
         }
 
-        if (agent.isOnNavMesh) agent.SetDestination(playerTarget.position);
         agent.speed = distance > runDistance ? runSpeed : walkSpeed;
+        float movementSpeed = MoveTowardsPlayer(agent.speed);
         petAnimator?.SetBool(isWalkingParam, true);
-        SetAnimatorFloat(speedParam, agent.velocity.magnitude);
+        SetAnimatorFloat(speedParam, movementSpeed);
     }
 
     private void SetState(PetState newState)
@@ -139,25 +155,25 @@ public class PetFollowController : MonoBehaviour
         switch (newState)
         {
             case PetState.Idle:
-                if (agent.isOnNavMesh) agent.isStopped = true;
+                StopAgentIfPossible();
                 petAnimator?.SetBool(isWalkingParam, false);
                 petAnimator.speed = 1f;
                 SetAnimatorFloat(speedParam, 0f);
                 SetAnimatorBool(sittingParam, false);
                 break;
             case PetState.Following:
-                if (agent.isOnNavMesh) agent.isStopped = false;
+                if (useNavMeshForFollow && agent.isOnNavMesh) agent.isStopped = false;
                 SetAnimatorBool(sittingParam, false);
                 break;
             case PetState.Sitting:
-                if (agent.isOnNavMesh) agent.isStopped = true;
+                StopAgentIfPossible();
                 petAnimator?.SetBool(isWalkingParam, false);
                 petAnimator.speed = 1f;
                 SetAnimatorFloat(speedParam, 0f);
                 SetAnimatorBool(sittingParam, true);
                 break;
             case PetState.RunningRoute:
-                if (agent.isOnNavMesh) agent.isStopped = true;
+                StopAgentIfPossible();
                 break;
         }
     }
@@ -288,6 +304,111 @@ public class PetFollowController : MonoBehaviour
         agent.acceleration = 12f;
         agent.autoBraking = true;
         agent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+        agent.updatePosition = useNavMeshForFollow;
+        agent.updateRotation = useNavMeshForFollow;
+    }
+
+    private void TryPlaceAgentOnNavMesh()
+    {
+        if (agent == null || agent.isOnNavMesh)
+        {
+            return;
+        }
+
+        if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, navMeshSampleRadius, NavMesh.AllAreas))
+        {
+            agent.Warp(hit.position);
+            return;
+        }
+
+        if (useNavMeshForFollow && !navMeshWarningShown)
+        {
+            navMeshWarningShown = true;
+            Debug.LogWarning("[PetFollowController] El lobo no esta sobre un NavMesh cercano. Rehornea el NavMesh o coloca al lobo sobre una zona walkable.", this);
+        }
+    }
+
+    private float MoveTowardsPlayer(float speed)
+    {
+        if (playerTarget == null)
+        {
+            return 0f;
+        }
+
+        TryPlaceAgentOnNavMesh();
+
+        if (useNavMeshForFollow)
+        {
+            if (agent == null || !agent.isOnNavMesh)
+            {
+                return 0f;
+            }
+
+            bool destinationAccepted;
+            if (NavMesh.SamplePosition(playerTarget.position, out NavMeshHit playerHit, navMeshSampleRadius, NavMesh.AllAreas))
+            {
+                destinationAccepted = agent.SetDestination(playerHit.position);
+            }
+            else
+            {
+                destinationAccepted = agent.SetDestination(playerTarget.position);
+            }
+
+            if (destinationAccepted)
+            {
+                return agent.velocity.magnitude;
+            }
+
+            if (!navMeshWarningShown)
+            {
+                navMeshWarningShown = true;
+                Debug.LogWarning("[PetFollowController] NavMeshAgent no acepto destino hacia el jugador. Revisa que el NavMesh este bakeado y conectado.", this);
+            }
+
+            return 0f;
+        }
+
+        if (!directFollowFallback)
+        {
+            return 0f;
+        }
+
+        Vector3 targetPosition = playerTarget.position;
+        targetPosition.y = transform.position.y;
+        Vector3 toTarget = targetPosition - transform.position;
+        if (toTarget.sqrMagnitude <= stopDistance * stopDistance)
+        {
+            return 0f;
+        }
+
+        Vector3 nextPosition = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
+        Vector3 movement = nextPosition - transform.position;
+        if (useNavMeshForFollow && agent != null && agent.isOnNavMesh)
+        {
+            agent.Move(movement);
+        }
+        else
+        {
+            transform.position = nextPosition;
+        }
+
+        Vector3 flatDirection = toTarget;
+        flatDirection.y = 0f;
+        if (flatDirection.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(flatDirection.normalized, Vector3.up);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, directRotationSpeed * Time.deltaTime);
+        }
+
+        return speed;
+    }
+
+    private void StopAgentIfPossible()
+    {
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+        }
     }
 
     private void EnsureDefaultSetup()
