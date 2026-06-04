@@ -12,6 +12,11 @@ public class PauseMenuController : MonoBehaviour
     [SerializeField] private Button quitButton;
     [SerializeField] private Button musicDownButton;
     [SerializeField] private Button musicUpButton;
+    [SerializeField] private Button skipDoor1Button;
+    [SerializeField] private Button skipDoor2Button;
+    [SerializeField] private Button skipDoor3Button;
+    [SerializeField] private Button skipQuestionsButton;
+    [SerializeField] private Button skipFinalButton;
     [SerializeField] private Text musicVolumeText;
     [SerializeField] private DialogueRunner dialogueRunner;
 
@@ -193,7 +198,76 @@ public class PauseMenuController : MonoBehaviour
         musicUpButton.onClick.AddListener(RaiseMusicVolume);
         mainMenuButton.onClick.AddListener(ReturnToMainMenu);
         quitButton.onClick.AddListener(QuitGame);
+        EnsureDebugSkipPanel(canvasObject.transform);
         RefreshMusicVolumeText();
+    }
+
+    private void EnsureDebugSkipPanel(Transform canvasTransform)
+    {
+        if (!ShouldShowDebugSkipTools())
+        {
+            return;
+        }
+
+        GameObject panel = new GameObject("DebugDoorSkipPanel");
+        panel.transform.SetParent(canvasTransform, false);
+
+        Image panelImage = panel.AddComponent<Image>();
+        panelImage.color = new Color(0.03f, 0.04f, 0.05f, 0.92f);
+
+        RectTransform panelRect = panel.GetComponent<RectTransform>();
+        panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+        panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+        panelRect.pivot = new Vector2(0.5f, 0.5f);
+        panelRect.anchoredPosition = new Vector2(430f, 0f);
+        panelRect.sizeDelta = new Vector2(250f, 390f);
+
+        CreateText(panel.transform, "DebugTitle", "EVALUAR", 24, FontStyle.Bold, new Vector2(0f, 155f), new Vector2(210f, 42f));
+        CreateText(panel.transform, "DebugHint", "Saltar a etapa", 15, FontStyle.Normal, new Vector2(0f, 124f), new Vector2(210f, 28f));
+
+        skipDoor1Button = CreateButton(panel.transform, "SkipDoor1", "PUERTA 1", new Vector2(0f, 78f), new Vector2(190f, 42f));
+        skipDoor2Button = CreateButton(panel.transform, "SkipDoor2", "PUERTA 2", new Vector2(0f, 28f), new Vector2(190f, 42f));
+        skipDoor3Button = CreateButton(panel.transform, "SkipDoor3", "PUERTA 3", new Vector2(0f, -22f), new Vector2(190f, 42f));
+        skipQuestionsButton = CreateButton(panel.transform, "SkipQuestions", "PREGUNTAS", new Vector2(0f, -72f), new Vector2(190f, 42f));
+        skipFinalButton = CreateButton(panel.transform, "SkipFinal", "FINAL", new Vector2(0f, -122f), new Vector2(190f, 42f));
+
+        skipDoor1Button.onClick.AddListener(() => SkipToChapterStage("Puerta1"));
+        skipDoor2Button.onClick.AddListener(() => SkipToChapterStage("Puerta2"));
+        skipDoor3Button.onClick.AddListener(() => SkipToChapterStage("Puerta3"));
+        skipQuestionsButton.onClick.AddListener(() => SkipToChapterStage("Estacion4"));
+        skipFinalButton.onClick.AddListener(() => SkipToChapterStage("Final"));
+    }
+
+    private static bool ShouldShowDebugSkipTools()
+    {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        return true;
+#else
+        return false;
+#endif
+    }
+
+    private void SkipToChapterStage(string stageName)
+    {
+        GameAudioManager.PlayUiClick();
+
+        Chapter1EnvironmentController environment = Chapter1EnvironmentController.Instance;
+        if (environment == null)
+        {
+            Debug.LogWarning($"{nameof(PauseMenuController)} could not skip to '{stageName}' because no {nameof(Chapter1EnvironmentController)} exists.");
+            return;
+        }
+
+        if (stageName == "Final")
+        {
+            environment.SetStage(stageName);
+        }
+        else
+        {
+            environment.UnlockStage(stageName);
+        }
+
+        SetPaused(false);
     }
 
     private bool IsDialogueRunning()

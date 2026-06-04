@@ -58,26 +58,20 @@ title: Puerta2
 ---
 <<chapter1_stage "Puerta2">>
 
-Interlocutor: Aquí muchos asienten, pero no se mueven.
-
-Interlocutor: Entender sin aplicar deja al sistema exactamente donde estaba.
+Avatar Clínico: Aquí muchos asienten, pero no se mueven. Entender sin aplicar deja al sistema exactamente donde estaba.
 
 Avatar Clínico: Comprender una frase no basta si no cambia conducta, movimiento o interpretación.
 
 -> Sí, suena lógico.
     Jugador: Sí, suena lógico.
-    Avatar Clínico: Has comprendido la frase, pero no has cruzado el puente.
-    Avatar Clínico: Sin acción, el entorno no cambia.
+    Avatar Clínico: Has comprendido la frase, pero no has cruzado el puente. Sin acción, el entorno no cambia.
     <<set $comprension_superficial += 1>>
     <<chapter1_unlock "Puerta3">>
-    Avatar Clínico: La tercera puerta se ha iluminado. Allí la comprensión debe convertirse en postura.
-
 -> Quiero probarlo en mi vida real.
     Jugador: Quiero probarlo en mi vida real.
     Avatar Clínico: Ahora sí. Cuando decides aplicar, el conocimiento deja de ser eco y se convierte en herramienta.
     <<set $aplicacion += 1>>
     <<chapter1_unlock "Puerta3">>
-    Avatar Clínico: La tercera puerta se ha iluminado. Allí empieza el compromiso.
 ===
 
 title: Puerta3

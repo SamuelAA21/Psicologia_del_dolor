@@ -43,7 +43,8 @@ public static class YarnUiKenneySkin
         if (optionsPresenter != null)
         {
             SkinPanel(optionsPresenter, dialogueSprite, new Color(0.02f, 0.07f, 0.12f, 0.93f));
-            ResizeBottomPanel(optionsPresenter, 80f, 58f, 420f, 210f);
+            ResizeBottomPanel(optionsPresenter, 80f, 58f, 420f, 280f);
+            EnsureOptionsLayout(optionsPresenter);
         }
 
         foreach (GameObject background in FindAllByName("Background"))
@@ -179,9 +180,46 @@ public static class YarnUiKenneySkin
             foreach (TMP_Text label in labels)
             {
                 label.color = Color.white;
-                label.fontSize = Mathf.Max(label.fontSize, 26f);
+                label.fontSize = Mathf.Max(label.fontSize, 24f);
                 label.enableWordWrapping = true;
             }
+        }
+    }
+
+    private static void EnsureOptionsLayout(Transform optionsPresenter)
+    {
+        VerticalLayoutGroup layout = optionsPresenter.GetComponentInChildren<VerticalLayoutGroup>(true);
+        if (layout != null)
+        {
+            layout.spacing = Mathf.Max(layout.spacing, 12f);
+            layout.padding.top = Mathf.Max(layout.padding.top, 18);
+            layout.padding.bottom = Mathf.Max(layout.padding.bottom, 18);
+            layout.childControlHeight = true;
+            layout.childForceExpandHeight = false;
+        }
+
+        ContentSizeFitter fitter = optionsPresenter.GetComponentInChildren<ContentSizeFitter>(true);
+        if (fitter != null)
+        {
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        }
+
+        foreach (Button button in optionsPresenter.GetComponentsInChildren<Button>(true))
+        {
+            RectTransform rect = button.transform as RectTransform;
+            if (rect != null)
+            {
+                rect.sizeDelta = new Vector2(rect.sizeDelta.x, Mathf.Max(rect.sizeDelta.y, 52f));
+            }
+
+            LayoutElement layoutElement = button.GetComponent<LayoutElement>();
+            if (layoutElement == null)
+            {
+                layoutElement = button.gameObject.AddComponent<LayoutElement>();
+            }
+
+            layoutElement.minHeight = Mathf.Max(layoutElement.minHeight, 52f);
+            layoutElement.preferredHeight = Mathf.Max(layoutElement.preferredHeight, 58f);
         }
     }
 
