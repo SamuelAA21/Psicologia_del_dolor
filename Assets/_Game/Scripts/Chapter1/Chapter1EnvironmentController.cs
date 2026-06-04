@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using Yarn.Unity;
 
@@ -7,6 +8,8 @@ public class Chapter1EnvironmentController : MonoBehaviour
     public static Chapter1EnvironmentController Instance { get; private set; }
 
     private const string DefaultInitialStage = "Puerta1";
+    private const string Door1InitialNode = "Puerta1";
+    private const string Door1PostBreathingNode = "Puerta1_PostRespiracion";
 
     [Header("Personajes")]
     [SerializeField] private GameObject avatarClinico;
@@ -149,6 +152,18 @@ public class Chapter1EnvironmentController : MonoBehaviour
         }
     }
 
+    [YarnCommand("chapter1_retreat_exit")]
+    public static void RetreatExitFromYarn()
+    {
+        Instance?.RetreatAndReturnControl();
+    }
+
+    [YarnCommand("chapter1_start_door1_breathing")]
+    public static void StartDoor1BreathingFromYarn()
+    {
+        Instance?.StartDoor1BreathingChallenge();
+    }
+
     public void SetStage(string stageName)
     {
         if (string.IsNullOrWhiteSpace(stageName))
@@ -198,7 +213,7 @@ public class Chapter1EnvironmentController : MonoBehaviour
             inventorySystem.AddCompass();
         }
 
-        SetObjective("Recompensa obtenida: prepárate para respirar.", brujulaDelCompromiso);
+        SetObjective("Recompensa obtenida: Brújula del Compromiso.", brujulaDelCompromiso);
     }
 
     public void UnlockStage(string stageName)
@@ -217,6 +232,7 @@ public class Chapter1EnvironmentController : MonoBehaviour
 
         if (stageName.Equals("Puerta1", StringComparison.OrdinalIgnoreCase))
         {
+            ConfigureDoor1DialogueNode();
             SetInteractableLocks(false, true, true, true);
             SetDoorLocked(puerta1Animation, false);
             SetDoorLocked(puerta2Animation, true);
@@ -793,5 +809,72 @@ public class Chapter1EnvironmentController : MonoBehaviour
 
         promptObject.SetActive(false);
         return promptObject;
+    }
+
+    private void CloseFortressForRetry()
+    {
+        if (autoBindSceneObjects)
+        {
+            AutoBindSceneObjects();
+        }
+
+        CurrentStage = "Puerta1";
+        ConfigureDoor1DialogueNode();
+        SetInteractableLocks(false, true, true, true);
+        SetDoorLocked(puerta1Animation, false);
+        SetDoorLocked(puerta2Animation, true);
+        SetDoorLocked(puerta3Animation, true);
+        puerta1Animation?.PlayClose();
+        puerta2Animation?.PlayClose();
+        puerta3Animation?.PlayClose();
+        HighlightStage("Puerta1");
+        SetObjective("Acércate a la Puerta 1: Retirada.", puerta1Retirada);
+    }
+
+    private void RetreatAndReturnControl()
+    {
+        CloseFortressForRetry();
+        StartCoroutine(RecoverPlayerAfterRetreat());
+    }
+
+    private void StartDoor1BreathingChallenge()
+    {
+        Chapter1ProgressState.BeginDoor1BreathingChallenge();
+        SceneLoader.LoadSceneSafe(GameSceneNames.BreathingMiniGame);
+    }
+
+    private void ConfigureDoor1DialogueNode()
+    {
+        if (puerta1Interactable == null)
+        {
+            return;
+        }
+
+        string nodeName = Chapter1ProgressState.BreathingCompleted
+            ? Door1PostBreathingNode
+            : Door1InitialNode;
+        puerta1Interactable.SetYarnNodeName(nodeName);
+    }
+
+    private IEnumerator RecoverPlayerAfterRetreat()
+    {
+        yield return null;
+
+        DialogueRunner runner = FindAnyObjectByType<DialogueRunner>(FindObjectsInactive.Include);
+        if (runner != null && runner.IsDialogueRunning)
+        {
+            _ = runner.Stop();
+        }
+
+        yield return null;
+
+        PlayerController player = FindAnyObjectByType<PlayerController>(FindObjectsInactive.Include);
+        if (player != null)
+        {
+            player.SetControlEnabled(true);
+        }
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 }

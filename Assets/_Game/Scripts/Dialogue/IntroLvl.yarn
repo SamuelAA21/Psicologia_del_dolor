@@ -25,26 +25,33 @@ title: Puerta1
 ---
 <<chapter1_stage "Puerta1">>
 
-Interlocutor: Has elegido retirarte. No es cobardía; es agotamiento.
+Narrador: Has elegido retirarte. No es cobardía; es agotamiento. Pero si te marchas ahora, volverás a recorrer los mismos pasillos con nombres distintos.
+    -> Quedarse
+        <<chapter1_start_door1_breathing>>
+        <<jump Puerta1_RetirarseFin>>
+    -> Retirarse
+        <<set $resistencia += 1>>
+        <<chapter1_retreat_exit>>
+        <<jump Puerta1_RetirarseFin>>
+===
 
-Interlocutor: Pero si te marchas ahora, volverás a recorrer los mismos pasillos con nombres distintos.
+title: Puerta1_PostRespiracion
+---
+<<chapter1_stage "Puerta1">>
 
 Avatar Clínico: No te prometo magia. Te prometo un mapa más honesto que el circuito de búsqueda infinita.
+    -> Estoy agotado, pero quiero mirar antes de irme.
+        Avatar Clínico: Eso basta para abrir la siguiente puerta. No necesito certeza total; necesito disposición.
+        <<set $disposicion += 1>>
+        <<chapter1_unlock "Puerta2">>
+    -> No creo que esto cambie nada; prefiero salir.
+        Avatar Clínico: Puedes salir. Pero si vuelves, el corredor seguirá aquí. Ningún mapa se revela a quien no entra.
+        <<set $resistencia += 1>>
+        <<chapter1_retreat_exit>>
+===
 
--> Estoy agotado, pero quiero mirar antes de irme.
-    Jugador: Estoy agotado, pero quiero mirar antes de irme.
-    Avatar Clínico: Eso basta para abrir la siguiente puerta. No necesito certeza total; necesito disposición.
-    <<set $disposicion += 1>>
-    <<chapter1_unlock "Puerta2">>
-    Avatar Clínico: La segunda puerta se ha iluminado. Acércate cuando quieras continuar.
-
--> No creo que esto cambie nada; prefiero salir.
-    Jugador: No creo que esto cambie nada; prefiero salir.
-    Avatar Clínico: Puedes salir. Pero si vuelves, el corredor seguirá aquí.
-    Avatar Clínico: Ningún mapa se revela a quien no entra.
-    <<set $resistencia += 1>>
-    <<chapter1_unlock "Puerta2">>
-    Avatar Clínico: Aun así, la segunda puerta se ha iluminado. Puedes acercarte sin prometer certeza.
+title: Puerta1_RetirarseFin
+---
 ===
 
 title: Puerta2
@@ -145,8 +152,4 @@ Avatar Clínico: Esta brújula no elimina el dolor, pero te ayuda a orientarte c
 
 <<set $brujula_compromiso = true>>
 <<chapter1_reward_unlocked>>
-
-Avatar Clínico: Practica la respiración consciente para continuar.
-
-<<iniciar_respiracion MinigameBridge>>
 ===

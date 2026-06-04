@@ -72,10 +72,10 @@ public class JetpackCompletionOverlay : MonoBehaviour
         if (rewardsText != null)
         {
             rewardsText.text =
-                "Objetos y avances conseguidos:\n" +
+                "Avance conseguido:\n" +
                 "- Respiracion consciente completada\n" +
-                "- Progreso del compromiso registrado\n" +
-                "- Camino de regreso a la Brujula desbloqueado";
+                "- Continuacion narrativa desbloqueada\n" +
+                "- Puerta 1 lista para decidir el siguiente paso";
         }
 
         Time.timeScale = 0f;

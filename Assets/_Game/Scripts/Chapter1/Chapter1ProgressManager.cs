@@ -7,6 +7,8 @@ public class Chapter1ProgressManager : MonoBehaviour
 {
     public static Chapter1ProgressManager Instance { get; private set; }
 
+    private const string Door1PostBreathingNode = "Puerta1_PostRespiracion";
+
     [Header("Referencias")]
     [SerializeField] private Chapter1GuidanceController guidanceController;
     [SerializeField] private Chapter1InventorySystem inventorySystem;
@@ -25,6 +27,7 @@ public class Chapter1ProgressManager : MonoBehaviour
     [SerializeField] private int sortingOrder = 3;
 
     private Coroutine notificationRoutine;
+    private Coroutine dialogueStartRoutine;
 
     public string CurrentObjective => currentObjective;
     public bool CompassObtained => compassObtained;
@@ -78,6 +81,7 @@ public class Chapter1ProgressManager : MonoBehaviour
 
     public void ConsumePendingMiniGameResult()
     {
+        bool wasDoor1BreathingChallenge = Chapter1ProgressState.ConsumePendingDoor1BreathingChallenge();
         Chapter1MiniGameResult result = Chapter1ProgressState.ConsumePendingMiniGameResult();
         if (result == Chapter1MiniGameResult.None)
         {
@@ -88,14 +92,66 @@ public class Chapter1ProgressManager : MonoBehaviour
         {
             breathingCompleted = true;
             GameAudioManager.PlayReward();
+            if (wasDoor1BreathingChallenge && Chapter1EnvironmentController.Instance != null)
+            {
+                Notify("Respiracion completada");
+                Chapter1EnvironmentController.Instance.UnlockStage("Puerta1");
+                StartDialogueNodeWhenReady(Door1PostBreathingNode);
+                return;
+            }
+
             Notify("Respiración completada");
-            SetObjective("Respiración completada. Vuelve a la Brújula del Compromiso.", compassTarget != null ? compassTarget.transform : null);
+            SetObjective("Respiración completada. Continúa con la narrativa.", null);
             return;
         }
 
         GameAudioManager.PlayError();
+        if (wasDoor1BreathingChallenge && Chapter1EnvironmentController.Instance != null)
+        {
+            Notify("Respiracion interrumpida");
+            Chapter1EnvironmentController.Instance.UnlockStage("Puerta1");
+            return;
+        }
+
         Notify("Respiración interrumpida");
-        SetObjective("Respiración interrumpida. Busca la Brújula e inténtalo de nuevo.", compassTarget != null ? compassTarget.transform : null);
+        SetObjective("Respiración interrumpida. Vuelve a intentarlo desde la Puerta 1.", null);
+    }
+
+    private void StartDialogueNodeWhenReady(string nodeName)
+    {
+        if (dialogueStartRoutine != null)
+        {
+            StopCoroutine(dialogueStartRoutine);
+        }
+
+        dialogueStartRoutine = StartCoroutine(StartDialogueNodeRoutine(nodeName));
+    }
+
+    private IEnumerator StartDialogueNodeRoutine(string nodeName)
+    {
+        if (string.IsNullOrWhiteSpace(nodeName))
+        {
+            yield break;
+        }
+
+        const int maxFramesToWait = 90;
+        for (int frame = 0; frame < maxFramesToWait; frame++)
+        {
+            EnsureReferences();
+
+            if (dialogueRunner != null && !dialogueRunner.IsDialogueRunning)
+            {
+                yield return null;
+                _ = dialogueRunner.StartDialogue(nodeName);
+                dialogueStartRoutine = null;
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        Debug.LogWarning($"{nameof(Chapter1ProgressManager)} could not continue Yarn node '{nodeName}' after returning from the breathing minigame.", this);
+        dialogueStartRoutine = null;
     }
 
     public void Notify(string message)

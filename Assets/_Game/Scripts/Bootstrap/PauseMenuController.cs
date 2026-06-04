@@ -48,7 +48,8 @@ public class PauseMenuController : MonoBehaviour
 
     private static bool IsGameplayScene(string sceneName)
     {
-        return GameSceneNames.IsGameplayScene(sceneName);
+        return GameSceneNames.IsGameplayScene(sceneName)
+            && !GameSceneNames.IsBreathingMiniGame(sceneName);
     }
 
     private void Awake()
