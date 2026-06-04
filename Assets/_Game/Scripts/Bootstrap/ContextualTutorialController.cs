@@ -8,8 +8,9 @@ public class ContextualTutorialController : MonoBehaviour
 {
     private const string TutorialShownKey = "Chapter1_ContextualTutorial_Shown";
 
-    [SerializeField] private bool showOnlyOnce = true;
+    [SerializeField] private bool showOnlyOnce;
     [SerializeField] private float hintSeconds = 4.8f;
+    [SerializeField] private int sortingOrder = 120;
     [SerializeField] private Canvas tutorialCanvas;
     [SerializeField] private Text hintText;
     [SerializeField] private DialogueRunner dialogueRunner;
@@ -20,7 +21,7 @@ public class ContextualTutorialController : MonoBehaviour
         "Sigue la esfera azul para encontrar el objetivo.",
         "Presiona E cerca de puertas o personajes para interactuar.",
         "Usa 1-9 o la rueda del mouse para seleccionar objetos del inventario.",
-        "Presiona Esc para pausar o volver al menú."
+        "Presiona Esc para pausar o volver al menu."
     };
 
     private Coroutine tutorialRoutine;
@@ -72,12 +73,20 @@ public class ContextualTutorialController : MonoBehaviour
             return;
         }
 
+        StopTutorial();
         tutorialRoutine = StartCoroutine(PlayTutorial());
+    }
+
+    private void OnDisable()
+    {
+        StopTutorial();
+        HideHint();
     }
 
     public static void ResetTutorial()
     {
         PlayerPrefs.DeleteKey(TutorialShownKey);
+        PlayerPrefs.Save();
     }
 
     private IEnumerator PlayTutorial()
@@ -148,12 +157,9 @@ public class ContextualTutorialController : MonoBehaviour
         GameObject canvasObject = new GameObject("ContextualTutorialCanvas");
         tutorialCanvas = canvasObject.AddComponent<Canvas>();
         tutorialCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        tutorialCanvas.sortingOrder = 35;
+        tutorialCanvas.sortingOrder = sortingOrder;
 
-        CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = 0.5f;
+        RuntimeUiUtility.EnsureCanvasScaler(canvasObject, new Vector2(1920f, 1080f));
 
         GameObject panel = new GameObject("HintPanel");
         panel.transform.SetParent(canvasObject.transform, false);
@@ -184,5 +190,16 @@ public class ContextualTutorialController : MonoBehaviour
         textRect.anchorMax = Vector2.one;
         textRect.offsetMin = new Vector2(20f, 10f);
         textRect.offsetMax = new Vector2(-20f, -10f);
+    }
+
+    private void StopTutorial()
+    {
+        if (tutorialRoutine == null)
+        {
+            return;
+        }
+
+        StopCoroutine(tutorialRoutine);
+        tutorialRoutine = null;
     }
 }

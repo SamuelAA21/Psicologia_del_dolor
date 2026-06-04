@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
 /// <summary>
 /// Tipos y clases compartidas por CharacterRouteController y PetFollowController.
-/// Mantener este archivo en Assets/Scripts/Shared/
+/// Mantener este archivo en Assets/_Game/Scripts/Shared/
 /// </summary>
 public enum RouteActionType
 {

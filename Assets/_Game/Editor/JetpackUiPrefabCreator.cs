@@ -4,11 +4,11 @@ using UnityEngine.UI;
 
 public static class JetpackUiPrefabCreator
 {
-    private const string ResourcesFolder = "Assets/Resources";
-    private const string UiFolder = "Assets/Resources/UI";
-    private const string OverlayPrefabPath = "Assets/Resources/UI/JetpackPreGameOverlay.prefab";
-    private const string HudPrefabPath = "Assets/Resources/UI/JetpackTherapyHud.prefab";
-    private const string CompletionPrefabPath = "Assets/Resources/UI/JetpackCompletionOverlay.prefab";
+    private const string ResourcesFolder = "Assets/_Game/Resources";
+    private const string UiFolder = "Assets/_Game/Resources/UI";
+    private const string OverlayPrefabPath = "Assets/_Game/Resources/UI/JetpackPreGameOverlay.prefab";
+    private const string HudPrefabPath = "Assets/_Game/Resources/UI/JetpackTherapyHud.prefab";
+    private const string CompletionPrefabPath = "Assets/_Game/Resources/UI/JetpackCompletionOverlay.prefab";
 
     [InitializeOnLoadMethod]
     private static void CreateMissingPrefabsOnLoad()
@@ -59,7 +59,7 @@ public static class JetpackUiPrefabCreator
     {
         if (!AssetDatabase.IsValidFolder(ResourcesFolder))
         {
-            AssetDatabase.CreateFolder("Assets", "Resources");
+            AssetDatabase.CreateFolder("Assets/_Game", "Resources");
         }
 
         if (!AssetDatabase.IsValidFolder(UiFolder))

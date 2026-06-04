@@ -21,7 +21,7 @@ public class Chapter1GuidanceController : MonoBehaviour
 
     [Header("Marcador en mundo")]
     [SerializeField] private GameObject waypointMarker;
-    [SerializeField] private float markerHeight = 4.2f;
+    [SerializeField] private float markerHeight = 2.7f;
     [SerializeField] private float markerScale = 0.8f;
     [SerializeField] private float markerBobAmount = 0.25f;
     [SerializeField] private float markerBobSpeed = 2.2f;

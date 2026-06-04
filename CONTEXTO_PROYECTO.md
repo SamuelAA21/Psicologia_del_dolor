@@ -1,6 +1,6 @@
 # Contexto del proyecto: Psicologia_del_dolor
 
-Actualizado el 2026-06-02 para reflejar el estado real del repositorio local en `D:\Psicologia_del_dolor`.
+Actualizado el 2026-06-04 para reflejar el estado real del repositorio local en `D:\Psicologia_del_dolor`.
 
 Este documento es la referencia base antes de desarrollar nuevas funciones. Debe mantenerse sincronizado cuando cambien escenas, sistemas globales, dialogos, minijuegos, UI, audio o progresion.
 
@@ -25,12 +25,50 @@ Unity:
 - Navegacion: `com.unity.ai.navigation`.
 - UI: UGUI y TextMesh Pro.
 
+## 1.1 Organizacion de carpetas
+
+La arquitectura de assets sigue una estructura simple por dominios, practica para un flujo agil: cada cambio debe tocar una zona clara del proyecto y no mezclar assets propios con paquetes externos.
+
+```text
+Assets/_Game
+  Art
+    Chapter1Placeholders
+    Characters
+    Environments/Models
+  Editor
+  MiniGames/JetpackJoyride
+  Resources
+    Audio
+    KenneyUi
+    UI
+  Scenes
+  Scripts
+    Animation
+    Bootstrap
+    Chapter1
+    Dialogue
+    Interaction
+    MiniGames
+    NPC
+    Player
+  UI/Interfaces
+```
+
+Reglas practicas:
+
+- Todo asset propio nuevo debe ir dentro de `Assets/_Game`.
+- Paquetes/importaciones externas se mantienen fuera de `_Game`, por ejemplo `TextMesh Pro`, `Fantasy Skybox FREE`, `TutorialInfo` y `Settings`.
+- Escenas oficiales viven en `Assets/_Game/Scenes`.
+- Prefabs cargados con `Resources.Load` viven en cualquier carpeta llamada `Resources`; actualmente se centralizan en `Assets/_Game/Resources`.
+- Scripts de editor propios viven en `Assets/_Game/Editor`.
+- Minijuegos con arte, prefabs y scripts importados/especificos se agrupan en `Assets/_Game/MiniGames`.
+
 ## 2. Flujo oficial actual
 
 La entrada recomendada es:
 
 ```text
-Assets/Scenes/Bootstrap.unity
+Assets/_Game/Scenes/Bootstrap.unity
 ```
 
 Flujo real:
@@ -54,10 +92,10 @@ Bootstrap
 Escenas en Build Settings:
 
 ```text
-0. Assets/Scenes/Bootstrap.unity
-1. Assets/Scenes/Interfaz.unity
-2. Assets/Scenes/FirstMiniGame.unity
-3. Assets/Scenes/SampleScene.unity
+0. Assets/_Game/Scenes/Bootstrap.unity
+1. Assets/_Game/Scenes/Interfaz.unity
+2. Assets/_Game/Scenes/FirstMiniGame.unity
+3. Assets/_Game/Scenes/SampleScene.unity
 ```
 
 ## 3. Escenas
@@ -84,10 +122,10 @@ Menu inicial actual del juego.
 Assets relacionados:
 
 ```text
-Assets/Interfaces/FondoInterfaz.png
-Assets/Interfaces/BOTON JUGAR.png
-Assets/Interfaces/BOTON INSTRUCCIONES.png
-Assets/Interfaces/VIDEO INTERFAZ.mp4
+Assets/_Game/UI/Interfaces/FondoInterfaz.png
+Assets/_Game/UI/Interfaces/BOTON JUGAR.png
+Assets/_Game/UI/Interfaces/BOTON INSTRUCCIONES.png
+Assets/_Game/UI/Interfaces/VIDEO INTERFAZ.mp4
 ```
 
 Sistema:
@@ -156,7 +194,7 @@ Sistemas:
 - `JetpackCompletionOverlay`: pantalla final al completar los 4 ciclos, con resumen y recompensas.
 - `BreathingTargetZoneVisualizer`: franja visual de zona correcta.
 - `ObstacleSpawner` compensa el tiempo de viaje del obstaculo para abrir el corredor donde el jugador estara cuando ese obstaculo llegue.
-- Las interfaces del minijuego se pueden editar como prefabs en `Assets/Resources/UI`.
+- Las interfaces del minijuego se pueden editar como prefabs en `Assets/_Game/Resources/UI`.
 
 Estado importante:
 
@@ -346,7 +384,7 @@ Componentes de `BreathingTherapyGuide`:
 Componentes del `Spawner`:
 
 - `ObstacleSpawner`
-  - `obstaclePrefab`: `Assets/JetpackJoyrideTemplate/Prefab/Obstacle.prefab`
+  - `obstaclePrefab`: `Assets/_Game/MiniGames/JetpackJoyride/Prefab/Obstacle.prefab`
   - `breathingController`: asignado al `BreathingController` del `GameManager`.
   - `playerTransform`: asignado al jugador.
   - `compensateObstacleTravelTime: true`.
@@ -379,9 +417,9 @@ Objetos/sistemas auto-instalados al cargar la escena:
 Prefabs editables esperados:
 
 ```text
-Assets/Resources/UI/JetpackPreGameOverlay.prefab
-Assets/Resources/UI/JetpackTherapyHud.prefab
-Assets/Resources/UI/JetpackCompletionOverlay.prefab
+Assets/_Game/Resources/UI/JetpackPreGameOverlay.prefab
+Assets/_Game/Resources/UI/JetpackTherapyHud.prefab
+Assets/_Game/Resources/UI/JetpackCompletionOverlay.prefab
 ```
 
 Nombres criticos dentro de `JetpackCompletionOverlay.prefab`:
@@ -397,7 +435,7 @@ Estos objetos pueden moverse, redisenarse o cambiar su contenido visual, pero no
 Si no existen, Unity los crea automaticamente mediante:
 
 ```text
-Assets/Editor/JetpackUiPrefabCreator.cs
+Assets/_Game/Editor/JetpackUiPrefabCreator.cs
 ```
 
 Tambien pueden regenerarse desde el menu:
@@ -571,7 +609,7 @@ BreathingController.SessionCompleted
 Archivo:
 
 ```text
-Assets/Scripts/Bootstrap/SceneLoader.cs
+Assets/_Game/Scripts/Bootstrap/SceneLoader.cs
 ```
 
 Responsabilidad:
@@ -600,7 +638,7 @@ Uso recomendado:
 Archivo:
 
 ```text
-Assets/Scripts/Bootstrap/GameAudioManager.cs
+Assets/_Game/Scripts/Bootstrap/GameAudioManager.cs
 ```
 
 Responsabilidad:
@@ -613,8 +651,8 @@ Responsabilidad:
 Audio actual:
 
 ```text
-Assets/Resources/AmbientalLoop.mp3
-Assets/Resources/Audio/GameplayMusic.mp3
+Assets/_Game/Resources/AmbientalLoop.mp3
+Assets/_Game/Resources/Audio/GameplayMusic.mp3
 ```
 
 Comportamiento actual:
@@ -629,7 +667,7 @@ Comportamiento actual:
 Archivo:
 
 ```text
-Assets/Scripts/Bootstrap/PauseMenuController.cs
+Assets/_Game/Scripts/Bootstrap/PauseMenuController.cs
 ```
 
 Responsabilidad:
@@ -651,7 +689,7 @@ Regla importante:
 Archivo:
 
 ```text
-Assets/Scripts/Bootstrap/MainMenuController.cs
+Assets/_Game/Scripts/Bootstrap/MainMenuController.cs
 ```
 
 Responsabilidad:
@@ -667,14 +705,16 @@ Responsabilidad:
 Archivo:
 
 ```text
-Assets/Scripts/Bootstrap/ContextualTutorialController.cs
+Assets/_Game/Scripts/Bootstrap/ContextualTutorialController.cs
 ```
 
 Responsabilidad:
 
 - Mostrar tutorial contextual al entrar a `SampleScene`.
-- Persistir si ya fue mostrado con PlayerPrefs.
+- Mostrarse siempre por defecto durante pruebas y presentaciones (`showOnlyOnce: false`).
+- Persistir si ya fue mostrado con PlayerPrefs solo cuando `showOnlyOnce` se active manualmente.
 - No interferir con dialogos.
+- Usar `sortingOrder: 120` para quedar por encima del HUD normal.
 
 Clave PlayerPrefs:
 
@@ -687,7 +727,7 @@ Chapter1_ContextualTutorial_Shown
 Archivo:
 
 ```text
-Assets/Scripts/Bootstrap/BrightEnvironmentController.cs
+Assets/_Game/Scripts/Bootstrap/BrightEnvironmentController.cs
 ```
 
 Responsabilidad:
@@ -701,8 +741,8 @@ Responsabilidad:
 Archivos:
 
 ```text
-Assets/Scripts/Dialogue/IntroLvl.yarn
-Assets/Scripts/Dialogue/StoryLvl.yarnproject
+Assets/_Game/Scripts/Dialogue/IntroLvl.yarn
+Assets/_Game/Scripts/Dialogue/StoryLvl.yarnproject
 ```
 
 Sistemas relacionados:
@@ -732,7 +772,7 @@ Comandos Yarn utiles:
 Carpeta:
 
 ```text
-Assets/Scripts/Chapter1
+Assets/_Game/Scripts/Chapter1
 ```
 
 Scripts principales:
@@ -776,29 +816,29 @@ Chapter1ProgressState.ReportBreathingFailed()
 Carpetas:
 
 ```text
-Assets/JetpackJoyrideTemplate
-Assets/Scripts/MiniGames
-Assets/Scripts/MiniGames/JetPackJoyride
+Assets/_Game/MiniGames/JetpackJoyride
+Assets/_Game/Scripts/MiniGames
+Assets/_Game/Scripts/MiniGames/JetPackJoyride
 ```
 
 Archivos principales:
 
 ```text
-Assets/JetpackJoyrideTemplate/Scripts/BreathingController.cs
-Assets/JetpackJoyrideTemplate/Scripts/BreathingTherapyGuide.cs
-Assets/JetpackJoyrideTemplate/Scripts/PlayerJetpack.cs
-Assets/JetpackJoyrideTemplate/Scripts/PlayerCollision.cs
-Assets/JetpackJoyrideTemplate/Scripts/ObstacleSpawner.cs
-Assets/JetpackJoyrideTemplate/Scripts/GameManager.cs
-Assets/JetpackJoyrideTemplate/Scripts/MoveLeft.cs
-Assets/JetpackJoyrideTemplate/Scripts/BackgroundLoop.cs
-Assets/Scripts/MiniGames/MiniGameRuntimeUtility.cs
-Assets/Scripts/MiniGames/MiniGameFlowController.cs
-Assets/Scripts/MiniGames/MiniGameBridge.cs
-Assets/Scripts/MiniGames/JetPackJoyride/JetpackPreGameOverlay.cs
-Assets/Scripts/MiniGames/JetPackJoyride/JetpackTherapyHud.cs
-Assets/Scripts/MiniGames/JetPackJoyride/JetpackCompletionOverlay.cs
-Assets/Scripts/MiniGames/JetPackJoyride/BreathingTargetZoneVisualizer.cs
+Assets/_Game/MiniGames/JetpackJoyride/Scripts/BreathingController.cs
+Assets/_Game/MiniGames/JetpackJoyride/Scripts/BreathingTherapyGuide.cs
+Assets/_Game/MiniGames/JetpackJoyride/Scripts/PlayerJetpack.cs
+Assets/_Game/MiniGames/JetpackJoyride/Scripts/PlayerCollision.cs
+Assets/_Game/MiniGames/JetpackJoyride/Scripts/ObstacleSpawner.cs
+Assets/_Game/MiniGames/JetpackJoyride/Scripts/GameManager.cs
+Assets/_Game/MiniGames/JetpackJoyride/Scripts/MoveLeft.cs
+Assets/_Game/MiniGames/JetpackJoyride/Scripts/BackgroundLoop.cs
+Assets/_Game/Scripts/MiniGames/MiniGameRuntimeUtility.cs
+Assets/_Game/Scripts/MiniGames/MiniGameFlowController.cs
+Assets/_Game/Scripts/MiniGames/MiniGameBridge.cs
+Assets/_Game/Scripts/MiniGames/JetPackJoyride/JetpackPreGameOverlay.cs
+Assets/_Game/Scripts/MiniGames/JetPackJoyride/JetpackTherapyHud.cs
+Assets/_Game/Scripts/MiniGames/JetPackJoyride/JetpackCompletionOverlay.cs
+Assets/_Game/Scripts/MiniGames/JetPackJoyride/BreathingTargetZoneVisualizer.cs
 ```
 
 Mecanica:
@@ -859,7 +899,7 @@ Riesgos tecnicos vigentes:
 Archivo:
 
 ```text
-Assets/Scripts/Player/PlayerController.cs
+Assets/_Game/Scripts/Player/PlayerController.cs
 ```
 
 Responsabilidad:
@@ -880,16 +920,16 @@ Notas:
 Carpeta:
 
 ```text
-Assets/Scripts/NPC
+Assets/_Game/Scripts/NPC
 ```
 
 Archivos:
 
 ```text
-Assets/Scripts/NPC/RouteSharedTypes.cs
-Assets/Scripts/NPC/CharacterRouteController.cs
-Assets/Scripts/NPC/Wolf/PetFollowController.cs
-Assets/Scripts/NPC/Wolf/PetController.controller
+Assets/_Game/Scripts/NPC/RouteSharedTypes.cs
+Assets/_Game/Scripts/NPC/CharacterRouteController.cs
+Assets/_Game/Scripts/NPC/Wolf/PetFollowController.cs
+Assets/_Game/Scripts/NPC/Wolf/PetController.controller
 ```
 
 Responsabilidad:
@@ -911,7 +951,7 @@ Validar al tocar:
 Asset:
 
 ```text
-Assets/Models/CAP 1/MAP1/InputSystem_Actions.inputactions
+Assets/_Game/Art/Environments/Models/CAP 1/MAP1/InputSystem_Actions.inputactions
 ```
 
 Uso actual:
@@ -933,34 +973,34 @@ Teclas importantes:
 ### Interfaces
 
 ```text
-Assets/Interfaces/FondoInterfaz.png
-Assets/Interfaces/BOTON JUGAR.png
-Assets/Interfaces/BOTON INSTRUCCIONES.png
-Assets/Interfaces/VIDEO INTERFAZ.mp4
+Assets/_Game/UI/Interfaces/FondoInterfaz.png
+Assets/_Game/UI/Interfaces/BOTON JUGAR.png
+Assets/_Game/UI/Interfaces/BOTON INSTRUCCIONES.png
+Assets/_Game/UI/Interfaces/VIDEO INTERFAZ.mp4
 ```
 
 ### Audio
 
 ```text
-Assets/Resources/AmbientalLoop.mp3
-Assets/Resources/Audio/GameplayMusic.mp3
+Assets/_Game/Resources/AmbientalLoop.mp3
+Assets/_Game/Resources/Audio/GameplayMusic.mp3
 ```
 
 ### Minijuego
 
 ```text
-Assets/JetpackJoyrideTemplate/Fondo.png
-Assets/JetpackJoyrideTemplate/JetpackSheets/Asenso-removebg-preview.png
-Assets/JetpackJoyrideTemplate/JetpackSheets/Desenso-removebg-preview.png
-Assets/JetpackJoyrideTemplate/JetpackSheets/Normal-removebg-preview.png
-Assets/JetpackJoyrideTemplate/Prefab/Obstacle.prefab
+Assets/_Game/MiniGames/JetpackJoyride/Fondo.png
+Assets/_Game/MiniGames/JetpackJoyride/JetpackSheets/Asenso-removebg-preview.png
+Assets/_Game/MiniGames/JetpackJoyride/JetpackSheets/Desenso-removebg-preview.png
+Assets/_Game/MiniGames/JetpackJoyride/JetpackSheets/Normal-removebg-preview.png
+Assets/_Game/MiniGames/JetpackJoyride/Prefab/Obstacle.prefab
 ```
 
 ### UI Kenney
 
 ```text
-Assets/Resources/KenneyUi
-Assets/Resources/KenneyPrototypeKit
+Assets/_Game/Resources/KenneyUi
+Assets/_Game/Resources/KenneyPrototypeKit
 ```
 
 ## 12. Dependencias
@@ -992,7 +1032,7 @@ Dependencias destacadas:
 - Usar `SerializeField` para parametros configurables desde inspector.
 - Evitar UI que tape dialogos. Dialogo debe tener prioridad visual.
 - Evitar que Escape avance dialogos. Escape es pausa solo fuera de dialogo.
-- Mantener recursos cargados con `Resources.Load` dentro de `Assets/Resources`.
+- Mantener recursos cargados con `Resources.Load` dentro de `Assets/_Game/Resources`.
 - Para minijuego, preferir feedback visual simple sobre animaciones 3D complejas.
 
 ## 14. Riesgos y deuda tecnica
@@ -1018,26 +1058,26 @@ Dependencias destacadas:
 
 | Necesidad | Archivos principales |
 | --- | --- |
-| Menu inicial | `Assets/Scenes/Interfaz.unity`, `Assets/Scripts/Bootstrap/MainMenuController.cs`, `Assets/Interfaces` |
-| Carga/pantalla de carga | `Assets/Scripts/Bootstrap/SceneLoader.cs` |
-| Nombres de escena | `Assets/Scripts/Bootstrap/GameSceneNames.cs` |
-| Utilidades UI runtime | `Assets/Scripts/Bootstrap/RuntimeUiUtility.cs` |
-| Pausa | `Assets/Scripts/Bootstrap/PauseMenuController.cs` |
-| Audio | `Assets/Scripts/Bootstrap/GameAudioManager.cs`, `Assets/Resources` |
-| Tutorial contextual | `Assets/Scripts/Bootstrap/ContextualTutorialController.cs` |
-| Cielo/ambiente | `Assets/Scripts/Bootstrap/BrightEnvironmentController.cs`, `SampleScene` |
-| Dialogos | `Assets/Scripts/Dialogue/IntroLvl.yarn`, `DialogueInputController.cs` |
-| Puertas/progreso capitulo 1 | `Assets/Scripts/Chapter1` |
-| Inventario | `Assets/Scripts/Chapter1/Chapter1InventorySystem.cs` |
-| Objetivos/proximidad | `Assets/Scripts/Chapter1/Chapter1GuidanceController.cs` |
-| Jugador 3D | `Assets/Scripts/Player/PlayerController.cs` |
-| Lobo/NPC | `Assets/Scripts/NPC/Wolf/PetFollowController.cs` |
-| Minijuego respiracion | `Assets/Scenes/FirstMiniGame.unity`, `Assets/JetpackJoyrideTemplate/Scripts`, `Assets/Scripts/MiniGames` |
-| Dependencias minijuego | `Assets/Scripts/MiniGames/MiniGameRuntimeUtility.cs`, `Assets/Scripts/MiniGames/MiniGameFlowController.cs` |
-| UI editable minijuego | `Assets/Resources/UI/JetpackPreGameOverlay.prefab`, `Assets/Resources/UI/JetpackTherapyHud.prefab`, `Assets/Resources/UI/JetpackCompletionOverlay.prefab` |
-| HUD minijuego | `Assets/Resources/UI/JetpackTherapyHud.prefab`, `Assets/Scripts/MiniGames/JetPackJoyride/JetpackTherapyHud.cs` |
-| Finalizacion minijuego | `Assets/Resources/UI/JetpackCompletionOverlay.prefab`, `Assets/Scripts/MiniGames/JetPackJoyride/JetpackCompletionOverlay.cs` |
-| Zona objetivo minijuego | `Assets/Scripts/MiniGames/JetPackJoyride/BreathingTargetZoneVisualizer.cs` |
+| Menu inicial | `Assets/_Game/Scenes/Interfaz.unity`, `Assets/_Game/Scripts/Bootstrap/MainMenuController.cs`, `Assets/_Game/UI/Interfaces` |
+| Carga/pantalla de carga | `Assets/_Game/Scripts/Bootstrap/SceneLoader.cs` |
+| Nombres de escena | `Assets/_Game/Scripts/Bootstrap/GameSceneNames.cs` |
+| Utilidades UI runtime | `Assets/_Game/Scripts/Bootstrap/RuntimeUiUtility.cs` |
+| Pausa | `Assets/_Game/Scripts/Bootstrap/PauseMenuController.cs` |
+| Audio | `Assets/_Game/Scripts/Bootstrap/GameAudioManager.cs`, `Assets/_Game/Resources` |
+| Tutorial contextual | `Assets/_Game/Scripts/Bootstrap/ContextualTutorialController.cs` |
+| Cielo/ambiente | `Assets/_Game/Scripts/Bootstrap/BrightEnvironmentController.cs`, `SampleScene` |
+| Dialogos | `Assets/_Game/Scripts/Dialogue/IntroLvl.yarn`, `DialogueInputController.cs` |
+| Puertas/progreso capitulo 1 | `Assets/_Game/Scripts/Chapter1` |
+| Inventario | `Assets/_Game/Scripts/Chapter1/Chapter1InventorySystem.cs` |
+| Objetivos/proximidad | `Assets/_Game/Scripts/Chapter1/Chapter1GuidanceController.cs` |
+| Jugador 3D | `Assets/_Game/Scripts/Player/PlayerController.cs` |
+| Lobo/NPC | `Assets/_Game/Scripts/NPC/Wolf/PetFollowController.cs` |
+| Minijuego respiracion | `Assets/_Game/Scenes/FirstMiniGame.unity`, `Assets/_Game/MiniGames/JetpackJoyride/Scripts`, `Assets/_Game/Scripts/MiniGames` |
+| Dependencias minijuego | `Assets/_Game/Scripts/MiniGames/MiniGameRuntimeUtility.cs`, `Assets/_Game/Scripts/MiniGames/MiniGameFlowController.cs` |
+| UI editable minijuego | `Assets/_Game/Resources/UI/JetpackPreGameOverlay.prefab`, `Assets/_Game/Resources/UI/JetpackTherapyHud.prefab`, `Assets/_Game/Resources/UI/JetpackCompletionOverlay.prefab` |
+| HUD minijuego | `Assets/_Game/Resources/UI/JetpackTherapyHud.prefab`, `Assets/_Game/Scripts/MiniGames/JetPackJoyride/JetpackTherapyHud.cs` |
+| Finalizacion minijuego | `Assets/_Game/Resources/UI/JetpackCompletionOverlay.prefab`, `Assets/_Game/Scripts/MiniGames/JetPackJoyride/JetpackCompletionOverlay.cs` |
+| Zona objetivo minijuego | `Assets/_Game/Scripts/MiniGames/JetPackJoyride/BreathingTargetZoneVisualizer.cs` |
 
 ## 16. Comandos utiles
 
@@ -1050,7 +1090,7 @@ rg --files Assets -g "*.cs" -g "!**/*.meta"
 Buscar comandos Yarn:
 
 ```powershell
-rg "YarnCommand" Assets/Scripts
+rg "YarnCommand" Assets/_Game/Scripts
 ```
 
 Buscar referencias a escenas:
@@ -1104,7 +1144,7 @@ Si el cambio es de audio o volumen, empieza en `GameAudioManager` y `PauseMenuCo
 
 Si el cambio es de dialogos, empieza en `IntroLvl.yarn` y `DialogueInputController`.
 
-Si el cambio es de puertas, objetivos o brujula, empieza en `Assets/Scripts/Chapter1`.
+Si el cambio es de puertas, objetivos o brujula, empieza en `Assets/_Game/Scripts/Chapter1`.
 
 Si el cambio es del minijuego, empieza en `FirstMiniGame`, `BreathingController`, `ObstacleSpawner`, `GameManager`, `PlayerCollision`, `JetpackTherapyHud` y `BreathingTargetZoneVisualizer`.
 

@@ -6,9 +6,9 @@ using Yarn.Unity;
 
 public static class Chapter1ScenePlaceholderBuilder
 {
-    private const string SampleScenePath = "Assets/Scenes/SampleScene.unity";
+    private const string SampleScenePath = "Assets/_Game/Scenes/SampleScene.unity";
     private const string RootName = "Chapter1_Placeholders";
-    private const string MaterialsFolder = "Assets/Chapter1Placeholders/Materials";
+    private const string MaterialsFolder = "Assets/_Game/Art/Chapter1Placeholders/Materials";
 
     [MenuItem("Tools/Chapter 1/Build SampleScene Placeholders")]
     public static void BuildSampleScenePlaceholders()
@@ -289,14 +289,14 @@ public static class Chapter1ScenePlaceholderBuilder
 
     private static Material GetMaterial(string name, Color color)
     {
-        if (!AssetDatabase.IsValidFolder("Assets/Chapter1Placeholders"))
+        if (!AssetDatabase.IsValidFolder("Assets/_Game/Art/Chapter1Placeholders"))
         {
-            AssetDatabase.CreateFolder("Assets", "Chapter1Placeholders");
+            AssetDatabase.CreateFolder("Assets/_Game/Art", "Chapter1Placeholders");
         }
 
         if (!AssetDatabase.IsValidFolder(MaterialsFolder))
         {
-            AssetDatabase.CreateFolder("Assets/Chapter1Placeholders", "Materials");
+            AssetDatabase.CreateFolder("Assets/_Game/Art/Chapter1Placeholders", "Materials");
         }
 
         string path = Path.Combine(MaterialsFolder, name + ".mat").Replace("\\", "/");
