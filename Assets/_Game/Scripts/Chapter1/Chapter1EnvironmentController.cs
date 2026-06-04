@@ -839,6 +839,12 @@ public class Chapter1EnvironmentController : MonoBehaviour
 
     private void StartDoor1BreathingChallenge()
     {
+        PlayerController player = FindAnyObjectByType<PlayerController>(FindObjectsInactive.Include);
+        if (player != null)
+        {
+            Chapter1ProgressState.SavePlayerTransform(player.transform.position, player.transform.rotation);
+        }
+
         Chapter1ProgressState.BeginDoor1BreathingChallenge();
         SceneLoader.LoadSceneSafe(GameSceneNames.BreathingMiniGame);
     }

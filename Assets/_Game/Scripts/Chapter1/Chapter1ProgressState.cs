@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public enum Chapter1MiniGameResult
 {
     None,
@@ -9,6 +11,9 @@ public static class Chapter1ProgressState
 {
     private static Chapter1MiniGameResult pendingMiniGameResult = Chapter1MiniGameResult.None;
     private static bool pendingDoor1BreathingChallenge;
+    private static Vector3 savedPlayerPosition;
+    private static Quaternion savedPlayerRotation;
+    private static bool hasSavedPlayerTransform;
 
     public static bool HasCompass { get; private set; }
     public static bool BreathingCompleted { get; private set; }
@@ -34,6 +39,39 @@ public static class Chapter1ProgressState
     {
         pendingDoor1BreathingChallenge = true;
         pendingMiniGameResult = Chapter1MiniGameResult.None;
+    }
+
+    public static void SavePlayerTransform(Vector3 position, Quaternion rotation)
+    {
+        savedPlayerPosition = position;
+        savedPlayerRotation = rotation;
+        hasSavedPlayerTransform = true;
+    }
+
+    public static bool TryConsumeSavedPlayerTransform(out Vector3 position, out Quaternion rotation)
+    {
+        position = savedPlayerPosition;
+        rotation = savedPlayerRotation;
+
+        if (!hasSavedPlayerTransform)
+        {
+            return false;
+        }
+
+        hasSavedPlayerTransform = false;
+        return true;
+    }
+
+    public static bool TryGetSavedPlayerTransform(out Vector3 position, out Quaternion rotation)
+    {
+        position = savedPlayerPosition;
+        rotation = savedPlayerRotation;
+        return hasSavedPlayerTransform;
+    }
+
+    public static void ClearSavedPlayerTransform()
+    {
+        hasSavedPlayerTransform = false;
     }
 
     public static Chapter1MiniGameResult ConsumePendingMiniGameResult()

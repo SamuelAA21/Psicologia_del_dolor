@@ -28,6 +28,7 @@ public class Chapter1ProgressManager : MonoBehaviour
 
     private Coroutine notificationRoutine;
     private Coroutine dialogueStartRoutine;
+    private Coroutine restorePlayerRoutine;
 
     public string CurrentObjective => currentObjective;
     public bool CompassObtained => compassObtained;
@@ -96,6 +97,7 @@ public class Chapter1ProgressManager : MonoBehaviour
             {
                 Notify("Respiracion completada");
                 Chapter1EnvironmentController.Instance.UnlockStage("Puerta1");
+                RestoreSavedPlayerTransform();
                 StartDialogueNodeWhenReady(Door1PostBreathingNode);
                 return;
             }
@@ -110,6 +112,7 @@ public class Chapter1ProgressManager : MonoBehaviour
         {
             Notify("Respiracion interrumpida");
             Chapter1EnvironmentController.Instance.UnlockStage("Puerta1");
+            RestoreSavedPlayerTransform();
             return;
         }
 
@@ -125,6 +128,43 @@ public class Chapter1ProgressManager : MonoBehaviour
         }
 
         dialogueStartRoutine = StartCoroutine(StartDialogueNodeRoutine(nodeName));
+    }
+
+    private void RestoreSavedPlayerTransform()
+    {
+        if (restorePlayerRoutine != null)
+        {
+            StopCoroutine(restorePlayerRoutine);
+        }
+
+        restorePlayerRoutine = StartCoroutine(RestoreSavedPlayerTransformRoutine());
+    }
+
+    private IEnumerator RestoreSavedPlayerTransformRoutine()
+    {
+        const int maxFramesToWait = 90;
+        for (int frame = 0; frame < maxFramesToWait; frame++)
+        {
+            if (!Chapter1ProgressState.TryGetSavedPlayerTransform(out Vector3 position, out Quaternion rotation))
+            {
+                restorePlayerRoutine = null;
+                yield break;
+            }
+
+            PlayerController player = FindAnyObjectByType<PlayerController>(FindObjectsInactive.Include);
+            if (player != null)
+            {
+                player.TeleportTo(position, rotation);
+                Chapter1ProgressState.ClearSavedPlayerTransform();
+                restorePlayerRoutine = null;
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        Debug.LogWarning($"{nameof(Chapter1ProgressManager)} could not restore the player position after returning from the breathing minigame.", this);
+        restorePlayerRoutine = null;
     }
 
     private IEnumerator StartDialogueNodeRoutine(string nodeName)

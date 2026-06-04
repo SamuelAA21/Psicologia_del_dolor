@@ -71,6 +71,25 @@ public class PlayerController : MonoBehaviour
         playerAnimator?.SetBool("IsWalking", false);
     }
 
+    public void TeleportTo(Vector3 position, Quaternion rotation)
+    {
+        bool wasEnabled = controller != null && controller.enabled;
+        if (controller != null)
+        {
+            controller.enabled = false;
+        }
+
+        transform.SetPositionAndRotation(position, rotation);
+        verticalVelocity = 0f;
+        moveInput = Vector2.zero;
+        lookInput = Vector2.zero;
+
+        if (controller != null)
+        {
+            controller.enabled = wasEnabled;
+        }
+    }
+
     private void HandleRotation()
     {
         float mouseX = lookInput.x * mouseSensitivity;
