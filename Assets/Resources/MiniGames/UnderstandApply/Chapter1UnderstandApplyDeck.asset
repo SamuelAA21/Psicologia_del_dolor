@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: Chapter1UnderstandApplyDeck
   m_EditorClassIdentifier: 
   cards:
-  - text: Leí que el dolor puede ser una señal de protección.
+  - text: "Le\xED que el dolor puede ser una se\xF1al de protecci\xF3n."
     category: 0
-  - text: Salí a caminar aunque sentía miedo al movimiento.
+  - text: "Sal\xED a caminar aunque sent\xEDa miedo al movimiento."
     category: 1
-  - text: Comprendí que dolor no siempre significa daño.
+  - text: "Comprend\xED que dolor no siempre significa da\xF1o."
     category: 0
-  - text: Probé una actividad que había evitado por temor.
+  - text: "Prob\xE9 una actividad que hab\xEDa evitado por temor."
     category: 1
-  - text: Aprendí cómo funciona el sistema de alarma del cuerpo.
+  - text: "Aprend\xED c\xF3mo funciona el sistema de alarma del cuerpo."
     category: 0
-  - text: Usé esa información para moverme con más confianza.
+  - text: "Us\xE9 esa informaci\xF3n para moverme con m\xE1s confianza."
     category: 1
