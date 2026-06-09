@@ -1,8 +1,53 @@
 # Contexto del proyecto: Psicologia_del_dolor
 
-Actualizado el 2026-06-04 para reflejar el estado real del repositorio local en `D:\Psicologia_del_dolor`.
+Actualizado el 2026-06-09 para reflejar el estado real del repositorio local en `D:\Psicologia_del_dolor`.
 
 Este documento es la referencia base antes de desarrollar nuevas funciones. Debe mantenerse sincronizado cuando cambien escenas, sistemas globales, dialogos, minijuegos, UI, audio o progresion.
+
+Guía de relevo rápido:
+
+```text
+ENTREGA_DESARROLLADOR.md
+```
+
+Estado Git documentado:
+
+```text
+Rama: CAP-1-V3
+Commit: ac1e616
+Estado base: limpio antes de agregar esta documentación
+```
+
+## 0. Estado actual del Capítulo 1
+
+El flujo vigente es:
+
+```text
+Puerta 1
+  -> Quedarse
+  -> minijuego de respiración (FirstMiniGame)
+  -> completar 4 ciclos
+  -> volver a la misma posición en SampleScene
+  -> Puerta1_PostRespiracion
+  -> respuesta positiva
+  -> Puerta 2
+  -> minijuego Entender o Aplicar (overlay Canvas)
+  -> completar 6 tarjetas
+  -> Puerta 3
+  -> Estacion4
+  -> Final
+  -> Brújula del Compromiso
+```
+
+Puntos críticos:
+
+- La respiración ocurre después de elegir `Quedarse` en Puerta 1.
+- La posición y rotación del jugador se restauran al volver del minijuego.
+- La Brújula solo se obtiene al final del capítulo.
+- Puerta 2 abre el minijuego `Entender o Aplicar`.
+- `Entender o Aplicar` usa un `ScriptableObject` con 6 tarjetas.
+- El menú de pausa incluye herramientas `EVALUAR` solo en Editor/Development Build.
+- La escena principal contiene `NavMeshSurface`; el lobo usa NavMesh y no fallback directo.
 
 ## 1. Resumen ejecutivo
 
